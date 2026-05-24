@@ -1,0 +1,25 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Suggestions: anyone can create (public form), only admins can read/update/delete
+    match /suggestions/{id} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Activity log: admins only
+    match /activity_log/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.token.email in [
+          'nathancwatkins23@gmail.com',
+          'nastyn8plays@gmail.com'
+        ];
+    }
+  }
+}
