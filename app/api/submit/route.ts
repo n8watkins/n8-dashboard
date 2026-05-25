@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase-admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import { makeTitle, makePreview } from '@/lib/utils'
-import { STATUS_OPTIONS, CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS } from '@/lib/config'
+import { CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, FIELD_LIMITS } from '@/lib/config'
 import type { SubmitPayload } from '@/lib/types'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { checkProfanity } from '@/lib/moderation'
@@ -30,6 +30,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
+  // ── Honeypot — bots fill it; real users never see it ───────────────────────
+  if (body.hp) {
+    return NextResponse.json({ ok: true, id: 'filtered' })
+  }
+
+  // ── reCAPTCHA v3 verification (active once RECAPTCHA_SECRET_KEY is set — v2.6) ─
+  const rcSecret = process.env.RECAPTCHA_SECRET_KEY
+  if (rcSecret) {
+    if (!body.recaptchaToken) {
+      return NextResponse.json({ error: 'Bot check failed. Please refresh and try again.' }, { status: 400 })
+    }
+    const rcRes  = await fetch('https://www.googleapis.com/recaptcha/api/siteverify', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    `secret=${rcSecret}&response=${encodeURIComponent(body.recaptchaToken)}`,
+    })
+    const rcData = await rcRes.json() as { success: boolean; score?: number }
+    if (!rcData.success || (rcData.score !== undefined && rcData.score < 0.5)) {
+      return NextResponse.json({ error: 'Bot check failed. Please refresh and try again.' }, { status: 400 })
+    }
+  }
+
   // Validate required fields
   const { category, type, suggestion, why, source } = body
   if (!category || !type || !suggestion || !why || !source) {
@@ -49,6 +71,22 @@ export async function POST(req: NextRequest) {
 
   const username = (body.username || '').trim()
   const extra    = (body.extra    || '').trim()
+
+  // ── Field length limits ────────────────────────────────────────────────────
+  const trimSuggestion = suggestion.trim()
+  const trimWhy        = why.trim()
+  if (trimSuggestion.length < FIELD_LIMITS.suggestion.min)
+    return NextResponse.json({ error: `Suggestion must be at least ${FIELD_LIMITS.suggestion.min} characters.` }, { status: 400 })
+  if (trimSuggestion.length > FIELD_LIMITS.suggestion.max)
+    return NextResponse.json({ error: `Suggestion must be ${FIELD_LIMITS.suggestion.max} characters or fewer.` }, { status: 400 })
+  if (trimWhy.length < FIELD_LIMITS.why.min)
+    return NextResponse.json({ error: `"Why it helps" must be at least ${FIELD_LIMITS.why.min} characters.` }, { status: 400 })
+  if (trimWhy.length > FIELD_LIMITS.why.max)
+    return NextResponse.json({ error: `"Why it helps" must be ${FIELD_LIMITS.why.max} characters or fewer.` }, { status: 400 })
+  if (extra.length > FIELD_LIMITS.extra.max)
+    return NextResponse.json({ error: `Extra context must be ${FIELD_LIMITS.extra.max} characters or fewer.` }, { status: 400 })
+  if (username.length > FIELD_LIMITS.username.max)
+    return NextResponse.json({ error: `Username must be ${FIELD_LIMITS.username.max} characters or fewer.` }, { status: 400 })
 
   // Moderation check
   const flagged         = checkProfanity(`${suggestion} ${body.why} ${extra}`)
