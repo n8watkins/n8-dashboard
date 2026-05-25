@@ -49,3 +49,11 @@ export type SuggestionStatus = (typeof STATUS_OPTIONS)[number]
 export type SuggestionCategory = (typeof CATEGORY_OPTIONS)[number]
 export type SuggestionType = (typeof TYPE_OPTIONS)[number]
 export type SuggestionSource = (typeof SOURCE_OPTIONS)[number]
+
+// ─── Field length limits (used by both client form and /api/submit) ───────────
+export const FIELD_LIMITS = {
+  suggestion: { min: 20, max: 2000 },
+  why:        { min: 10, max: 1000 },
+  extra:      { min: 0,  max: 500  },
+  username:   { min: 0,  max: 100  },
+} as const
