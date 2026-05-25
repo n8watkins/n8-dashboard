@@ -653,6 +653,20 @@ details:not([open]) .chev { transform: rotate(0deg); }
   border-radius: 9px;
 }
 
+/* ─── Public form extras ──────────────────────────────────────────────────── */
+.form-source-tag {
+  font-family: var(--font-mono);
+  font-size: 11px; text-transform: uppercase;
+  letter-spacing: .12em;
+  display: inline-block;
+  padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--green-dim);
+  background: var(--green-bg);
+  color: var(--green);
+  margin-bottom: 14px;
+}
+.form-source-tag strong { color: var(--green); font-weight: 700; }
+
 /* ─── Auth / sign-in ──────────────────────────────────────────────────────── */
 .auth-shell {
   display: flex;
