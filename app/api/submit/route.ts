@@ -4,11 +4,23 @@ import { FieldValue } from 'firebase-admin/firestore'
 import { makeTitle, makePreview } from '@/lib/utils'
 import { STATUS_OPTIONS, CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS } from '@/lib/config'
 import type { SubmitPayload } from '@/lib/types'
+import { checkRateLimit } from '@/lib/rate-limit'
 import nodemailer from 'nodemailer'
 
 // ─── POST /api/submit ─────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  // ── Rate limit ─────────────────────────────────────────────────────────────
+  const forwarded = req.headers.get('x-forwarded-for') || ''
+  const ip        = forwarded.split(',')[0].trim() || 'unknown'
+  const rateCheck = await checkRateLimit(ip)
+  if (!rateCheck.ok) {
+    return NextResponse.json(
+      { error: `Too many submissions. Try again in ${rateCheck.resetIn} seconds.` },
+      { status: 429 }
+    )
+  }
+
   let body: SubmitPayload
 
   try {

@@ -14,6 +14,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Rate limit: server-side only (admin SDK) — no client access
+    match /rate_limit/{ip} {
+      allow read, write: if false;
+    }
+
     function isAdmin() {
       return request.auth != null &&
         request.auth.token.email in [
