@@ -119,10 +119,23 @@ export default function ReviewQueue() {
         <div className="left">
           {/* Current suggestion */}
           <div className="card">
-            {current
-              ? <SuggestionDetail item={current} title="Current New Suggestion" />
-              : <CaughtUp />
-            }
+            {current ? (
+              <>
+                {current.moderationState === 'flagged' && current.moderationFlags && current.moderationFlags.length > 0 && (
+                  <div className="mod-banner">
+                    <span>⚠</span>
+                    <span>
+                      Flagged: contains {current.moderationFlags.map((f, i) => (
+                        <strong key={i}>{i > 0 ? ', ' : ''}"{f}"</strong>
+                      ))}
+                    </span>
+                  </div>
+                )}
+                <SuggestionDetail item={current} title="Current New Suggestion" />
+              </>
+            ) : (
+              <CaughtUp />
+            )}
           </div>
 
           {/* Related suggestions */}

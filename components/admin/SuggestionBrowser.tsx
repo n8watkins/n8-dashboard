@@ -53,6 +53,7 @@ export default function SuggestionBrowser() {
   const [type, setType]                 = useState('')
   const [source, setSource]             = useState('')
   const [status, setStatus]             = useState('')
+  const [flaggedOnly, setFlaggedOnly]   = useState(false)
 
   const [selected, setSelected]         = useState<Suggestion | null>(null)
   const [selectedStatus, setSelectedStatus]   = useState<SuggestionStatus>('New')
@@ -101,9 +102,15 @@ export default function SuggestionBrowser() {
     setSource('')
     setStatus('')
     setSearch('')
+    setFlaggedOnly(false)
   }
 
-  const filtersApplied = viewGroup !== 'all' || !!category || !!type || !!source || !!status || !!search
+  const filtersApplied = viewGroup !== 'all' || !!category || !!type || !!source || !!status || !!search || flaggedOnly
+
+  // Client-side flagged filter applied after fetch
+  const visibleSuggestions = flaggedOnly
+    ? suggestions.filter(s => s.moderationState === 'flagged')
+    : suggestions
 
   async function openSuggestion(id: string) {
     const s = await fetchSuggestion(id)
@@ -208,11 +215,21 @@ export default function SuggestionBrowser() {
             </div>
           </div>
 
+          {/* Flagged toggle */}
+          <div style={{ marginBottom: 10 }}>
+            <button
+              className={`small-btn${flaggedOnly ? ' active' : ''}`}
+              onClick={() => setFlaggedOnly(v => !v)}
+            >
+              ⚠ Flagged only
+            </button>
+          </div>
+
           {/* Grid */}
           <div className="list-grid">
             {loading
               ? <div className="empty-state" style={{ gridColumn: 'span 2' }}>Loading…</div>
-              : suggestions.length === 0
+              : visibleSuggestions.length === 0
                 ? filtersApplied
                   ? <NoResults
                       viewGroup={viewGroup} category={category} type={type}
@@ -220,7 +237,7 @@ export default function SuggestionBrowser() {
                       onClear={clearFilters}
                     />
                   : <div className="empty-state" style={{ gridColumn: 'span 2' }}>No suggestions yet.</div>
-                : suggestions.map(s => (
+                : visibleSuggestions.map(s => (
                   <div
                     key={s.id}
                     className="suggestion-item"

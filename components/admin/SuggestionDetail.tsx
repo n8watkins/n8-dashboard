@@ -36,7 +36,21 @@ export default function SuggestionDetail({ item, title }: Props) {
           <b>Status</b>
           <span className="pill-text">{item.status || 'New'}</span>
         </span>
+        {item.moderationState === 'flagged' && (
+          <span className="pill flagged">FLAGGED</span>
+        )}
       </div>
+
+      {item.moderationState === 'flagged' && item.moderationFlags && item.moderationFlags.length > 0 && (
+        <div className="mod-banner">
+          <span>⚠</span>
+          <span>
+            Flagged: contains {item.moderationFlags.map((f, i) => (
+              <strong key={i}>{i > 0 ? ', ' : ''}"{f}"</strong>
+            ))}
+          </span>
+        </div>
+      )}
 
       <div className="suggestion-block">
         <div className="field-label">Suggestion</div>

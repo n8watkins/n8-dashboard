@@ -10,6 +10,7 @@ import ActivityLog        from '@/components/admin/ActivityLog'
 import { Brand }          from '@/components/Brand'
 import SourceDashboard    from '@/components/admin/SourceDashboard'
 import SourceLinks        from '@/components/admin/SourceLinks'
+import { fetchStats }     from '@/lib/firestore'
 
 type Tab = 'queue' | 'browse' | 'log' | 'links'
 
@@ -19,6 +20,7 @@ export default function AdminPage() {
   const [user, setUser]           = useState<User | null | undefined>(undefined) // undefined = loading
   const [authError, setAuthError] = useState('')
   const [signingIn, setSigningIn] = useState(false)
+  const [flaggedCount, setFlaggedCount] = useState(0)
 
   const router      = useRouter()
   const searchParams = useSearchParams()
@@ -29,6 +31,13 @@ export default function AdminPage() {
     const unsub = onAuthStateChanged(auth, u => setUser(u))
     return unsub
   }, [])
+
+  // Fetch flagged count once user is confirmed admin
+  useEffect(() => {
+    if (user && ADMIN_EMAILS.includes(user.email || '')) {
+      fetchStats().then(s => setFlaggedCount(s.flagged))
+    }
+  }, [user])
 
   async function handleSignIn() {
     setSigningIn(true)
@@ -102,6 +111,11 @@ export default function AdminPage() {
       <div className="topbar">
         <Brand subtitle="Suggestion Review" />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--muted)' }}>
+          {flaggedCount > 0 && (
+            <span style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.05em' }}>
+              ⚠ {flaggedCount} flagged
+            </span>
+          )}
           <span>{user.email}</span>
           <button
             onClick={() => signOut(auth)}

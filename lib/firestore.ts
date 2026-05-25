@@ -215,6 +215,7 @@ export interface Stats {
   new: number
   active: number
   resolved: number
+  flagged: number
 }
 
 export async function saveReview(payload: SaveReviewPayload): Promise<Stats> {
@@ -278,6 +279,7 @@ function calcStats(suggestions: Suggestion[]): Stats {
     new:      suggestions.filter(s => s.status === 'New').length,
     active:   suggestions.filter(s => s.status === 'Active').length,
     resolved: suggestions.filter(s => ['Done','Duplicate','Rejected'].includes(s.status)).length,
+    flagged:  suggestions.filter(s => s.moderationState === 'flagged').length,
   }
 }
 

@@ -755,6 +755,25 @@ details:not([open]) .chev { transform: rotate(0deg); }
   .source-dash-cards { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ─── Moderation UI ──────────────────────────────────────────────────────── */
+.pill.flagged {
+  color: var(--red);
+  border-color: var(--red-border);
+  background: var(--red-bg);
+}
+.mod-banner {
+  background: var(--red-bg);
+  border: 1px solid var(--red-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--red);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ─── Resolution block ───────────────────────────────────────────────────── */
 .resolution-block {
   background: var(--panel-2);
