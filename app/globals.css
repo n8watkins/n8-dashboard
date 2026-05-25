@@ -1040,3 +1040,287 @@ details:not([open]) .chev { transform: rotate(0deg); }
 @media (max-width: 560px) {
   .log-tools { grid-template-columns: 1fr; }
 }
+
+/* ─── Weekly Recap panel ─────────────────────────────────────────────────── */
+.weekly-recap-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.recap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 16px;
+  background: rgba(74, 222, 128, 0.04);
+  border-bottom: 1px solid var(--border);
+  transition: background .12s;
+}
+
+.weekly-recap-panel:has(.recap-body) .recap-header { border-bottom-color: var(--border); }
+
+.recap-header:hover { background: rgba(74, 222, 128, 0.07); }
+
+.recap-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+}
+
+.recap-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: .04em;
+}
+.recap-badge.sent  { background: var(--green-bg);  color: var(--green); border: 1px solid var(--green-dim); }
+.recap-badge.error { background: var(--red-bg);    color: var(--red);   border: 1px solid var(--red-border); }
+
+.recap-body {
+  padding: 16px;
+}
+
+.recap-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 14px;
+  max-width: 560px;
+}
+
+.recap-error {
+  color: var(--red);
+  font-size: 13px;
+  background: var(--red-bg);
+  border: 1px solid var(--red-border);
+  border-radius: 9px;
+  padding: 9px 12px;
+  margin-bottom: 12px;
+}
+
+.recap-btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.recap-btn {
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+
+.recap-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.recap-btn.preview {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.recap-btn.preview:hover:not(:disabled) {
+  border-color: #4a6a4a;
+  color: var(--text);
+}
+
+.recap-btn.send {
+  border: 1px solid var(--green-dim);
+  background: var(--green-bg);
+  color: var(--green);
+}
+.recap-btn.send:hover:not(:disabled) { background: #073b1a; }
+
+.recap-btn.ghost {
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--muted);
+}
+.recap-btn.ghost:hover:not(:disabled) { color: var(--text); }
+
+.recap-loading {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 0;
+  font-style: italic;
+}
+
+.recap-sent-note {
+  font-size: 13px;
+  color: var(--green);
+  margin-top: 12px;
+}
+
+.recap-warnings { margin-top: 10px; }
+.recap-warn-line {
+  font-size: 12px;
+  color: var(--amber);
+  margin-bottom: 4px;
+}
+
+/* ── Preview ── */
+.recap-preview {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 4px;
+}
+
+.recap-preview-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.recap-section { margin-bottom: 14px; }
+
+.recap-section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.recap-big-num {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.recap-rows { display: flex; flex-direction: column; gap: 1px; }
+
+.recap-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(42,63,42,.5);
+  font-size: 13px;
+  gap: 12px;
+}
+
+.recap-row-label { color: var(--muted); }
+.recap-row-val   { color: var(--text); font-variant-numeric: tabular-nums; }
+.recap-pct       { color: var(--muted); font-size: 11px; margin-left: 4px; }
+
+.recap-flagged-note {
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid var(--red-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--red);
+  margin-bottom: 14px;
+}
+
+.recap-stat-pills {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.recap-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-3);
+  gap: 4px;
+}
+
+.recap-pill.queue  { border-color: #78350f; background: var(--amber-bg); }
+.recap-pill.active { border-color: var(--blue-border); background: var(--blue-bg); }
+.recap-pill.done   { border-color: var(--green-dim); background: var(--green-bg); }
+
+.pill-num {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.recap-pill.queue  .pill-num { color: var(--amber); }
+.recap-pill.active .pill-num { color: var(--blue); }
+.recap-pill.done   .pill-num { color: var(--green); }
+
+.pill-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+}
+
+.recap-item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recap-item {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(42,63,42,.5);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.recap-item::before {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: middle;
+  content: '';
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.recap-item.done   { color: #86efac; }
+.recap-item.active { color: #93c5fd; }
+
+.recap-empty {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.recap-footer-note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 560px) {
+  .recap-stat-pills { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .recap-big-num    { font-size: 32px; }
+}

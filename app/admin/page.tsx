@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth'
 import { auth, googleProvider } from '@/lib/firebase'
@@ -10,13 +10,23 @@ import ActivityLog        from '@/components/admin/ActivityLog'
 import { Brand }          from '@/components/Brand'
 import SourceDashboard    from '@/components/admin/SourceDashboard'
 import SourceLinks        from '@/components/admin/SourceLinks'
+import WeeklyRecap        from '@/components/admin/WeeklyRecap'
 import { fetchStats }     from '@/lib/firestore'
 
 type Tab = 'queue' | 'browse' | 'log' | 'links'
 
 // ─── Admin shell (auth gate + tab routing) ────────────────────────────────────
 
+// Next.js requires useSearchParams() to be inside a Suspense boundary
 export default function AdminPage() {
+  return (
+    <Suspense>
+      <AdminInner />
+    </Suspense>
+  )
+}
+
+function AdminInner() {
   const [user, setUser]           = useState<User | null | undefined>(undefined) // undefined = loading
   const [authError, setAuthError] = useState('')
   const [signingIn, setSigningIn] = useState(false)
@@ -132,6 +142,7 @@ export default function AdminPage() {
       </div>
 
       <SourceDashboard />
+      <WeeklyRecap />
 
       <div className="tabs">
         <button className={`tab-btn${safeTab === 'queue'  ? ' active' : ''}`} onClick={() => setTab('queue')}>Review Queue</button>

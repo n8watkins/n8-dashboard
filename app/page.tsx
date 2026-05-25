@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, FIELD_LIMITS } from '@/lib/config'
 
@@ -16,6 +16,14 @@ declare global {
 // ─── Public suggestion form ───────────────────────────────────────────────────
 
 export default function SuggestionFormPage() {
+  return (
+    <Suspense>
+      <SuggestionFormInner />
+    </Suspense>
+  )
+}
+
+function SuggestionFormInner() {
   const router = useRouter()
   const params = useSearchParams()
 
