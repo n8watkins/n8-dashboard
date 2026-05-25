@@ -666,6 +666,12 @@ details:not([open]) .chev { transform: rotate(0deg); }
   margin-bottom: 14px;
 }
 .form-source-tag strong { color: var(--green); font-weight: 700; }
+.form-brand-mark {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  margin: 0 auto 16px;
+  display: block;
+}
 
 /* ─── Auth / sign-in ──────────────────────────────────────────────────────── */
 .auth-shell {

@@ -76,6 +76,8 @@ export default function SuggestionFormPage() {
           Don't submit anything private or personal.
         </p>
 
+        <div className="brand-mark form-brand-mark" />
+
         {validSource && (
           <div className="form-source-tag">
             Responding from <strong>{validSource}</strong>
