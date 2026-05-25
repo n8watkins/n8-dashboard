@@ -60,6 +60,37 @@ function groupEntries(entries: ActivityLogEntry[], dir: 'asc' | 'desc'): YearGro
     })
 }
 
+// ─── No-results state for log filters ────────────────────────────────────────
+
+function LogNoResults({
+  search, year, monthKey, interaction, result, onlyNotes, onlyDecisions,
+  onClear,
+}: {
+  search: string; year: string; monthKey: string; interaction: string
+  result: string; onlyNotes: boolean; onlyDecisions: boolean
+  onClear: () => void
+}) {
+  const active: string[] = []
+  if (search)       active.push(`search: "${search}"`)
+  if (year)         active.push(`year: ${year}`)
+  if (monthKey)     active.push(`month: ${monthKey}`)
+  if (interaction)  active.push(`type: ${interaction}`)
+  if (result)       active.push(`result: ${result}`)
+  if (onlyNotes)    active.push('only with notes')
+  if (onlyDecisions) active.push('only decisions')
+
+  return (
+    <div className="no-results">
+      <div className="no-results-icon">?</div>
+      <h3>Nothing matched.</h3>
+      <p>Filters: {active.join(', ')}</p>
+      <div className="no-results-actions">
+        <button className="small-btn" onClick={onClear}>Clear all filters</button>
+      </div>
+    </div>
+  )
+}
+
 export default function ActivityLog() {
   const [entries, setEntries]       = useState<ActivityLogEntry[]>([])
   const [groups, setGroups]         = useState<YearGroup[]>([])
@@ -114,6 +145,19 @@ export default function ActivityLog() {
     }))
     setMonths(monthList)
   }, [year, entries])
+
+  function clearFilters() {
+    setSearch('')
+    setYear('')
+    setMonthKey('')
+    setInteraction('')
+    setResult('')
+    setOnlyNotes(false)
+    setOnlyDecisions(false)
+    // keep sortDir
+  }
+
+  const filtersApplied = !!(search || year || monthKey || interaction || result || onlyNotes || onlyDecisions)
 
   const setAllOpen = (open: boolean) => {
     document.querySelectorAll('#log-grid details').forEach((d) => {
@@ -189,7 +233,14 @@ export default function ActivityLog() {
         {loading
           ? <div className="empty-state">Loading activity log…</div>
           : groups.length === 0
-            ? <div className="empty-state">No activity found for these filters.</div>
+            ? filtersApplied
+              ? <LogNoResults
+                  search={search} year={year} monthKey={monthKey}
+                  interaction={interaction} result={result}
+                  onlyNotes={onlyNotes} onlyDecisions={onlyDecisions}
+                  onClear={clearFilters}
+                />
+              : <div className="empty-state">No activity yet.</div>
             : groups.map(yg => <YearGroupEl key={yg.year} group={yg} />)
         }
       </div>
