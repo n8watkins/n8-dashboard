@@ -66,9 +66,12 @@ export async function POST(req: NextRequest) {
       title:         makeTitle(suggestion),
     })
 
-    // Send email notification (non-blocking — failure doesn't fail the request)
+    // Send notifications (non-blocking — failures don't fail the request)
     sendEmailNotification(body, docRef.id).catch(err => {
       console.error('[email] Notification failed (submission still saved):', err)
+    })
+    notifyDiscord(body, docRef.id).catch(err => {
+      console.error('[discord] Webhook failed (submission still saved):', err)
     })
 
     return NextResponse.json({ ok: true, id: docRef.id })
@@ -76,6 +79,34 @@ export async function POST(req: NextRequest) {
     console.error('[submit] Firestore write failed:', err)
     return NextResponse.json({ error: 'Failed to save suggestion' }, { status: 500 })
   }
+}
+
+// ─── Discord webhook notification ────────────────────────────────────────────
+
+async function notifyDiscord(data: SubmitPayload, docId: string) {
+  const url = process.env.DISCORD_WEBHOOK_URL
+  if (!url) return
+
+  const body = {
+    embeds: [{
+      title:       `${data.category} — ${data.type}`,
+      description: data.suggestion.slice(0, 400),
+      color:       0x4ade80,
+      fields: [
+        { name: 'Why',    value: data.why.slice(0, 300) },
+        { name: 'Source', value: data.source,              inline: true },
+        { name: 'From',   value: data.username || '(anon)', inline: true },
+      ],
+      footer:    { text: `Doc: ${docId}` },
+      timestamp: new Date().toISOString(),
+    }],
+  }
+
+  await fetch(url, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  })
 }
 
 // ─── Email notification ───────────────────────────────────────────────────────
