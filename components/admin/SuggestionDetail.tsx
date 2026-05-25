@@ -58,6 +58,23 @@ export default function SuggestionDetail({ item, title }: Props) {
           <div className="field-val">{item.extra || '—'}</div>
         </div>
       </div>
+
+      {item.resolutionNote && (
+        <div className="resolution-block">
+          <div className="field-label">Resolution</div>
+          <div className="field-val">{item.resolutionNote}</div>
+          {item.resolutionLink && (
+            <a
+              href={item.resolutionLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="resolution-link"
+            >
+              ↳ view result
+            </a>
+          )}
+        </div>
+      )}
     </>
   )
 }

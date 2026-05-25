@@ -14,10 +14,12 @@ export default function ReviewQueue() {
   const [current, setCurrent]     = useState<Suggestion | null | undefined>(undefined)
   const [related, setRelated]     = useState<Suggestion[]>([])
   const [stats, setStats]         = useState<Stats | null>(null)
-  const [decision, setDecision]   = useState<SuggestionStatus | null>(null)
-  const [notes, setNotes]         = useState('')
-  const [saving, setSaving]       = useState(false)
-  const [saveState, setSaveState] = useState<'idle' | 'saved' | 'error'>('idle')
+  const [decision, setDecision]         = useState<SuggestionStatus | null>(null)
+  const [notes, setNotes]               = useState('')
+  const [resolutionNote, setResNote]    = useState('')
+  const [resolutionLink, setResLink]    = useState('')
+  const [saving, setSaving]             = useState(false)
+  const [saveState, setSaveState]       = useState<'idle' | 'saved' | 'error'>('idle')
 
   // Related filters
   const [relSearch, setRelSearch]   = useState('')
@@ -39,6 +41,8 @@ export default function ReviewQueue() {
       setCurrent(suggestion)
       setDecision(null)
       setNotes(suggestion?.internalNotes || '')
+      setResNote(suggestion?.resolutionNote || '')
+      setResLink(suggestion?.resolutionLink || '')
     })
     return unsub
   }, [])
@@ -64,10 +68,12 @@ export default function ReviewQueue() {
     setSaveState('idle')
 
     const payload: SaveReviewPayload = {
-      suggestionId: current.id,
-      status:       decision,
+      suggestionId:  current.id,
+      status:        decision,
       internalNotes: notes,
-      actionSource: 'queue',
+      actionSource:  'queue',
+      resolutionNote: decision === 'Done' ? resolutionNote : undefined,
+      resolutionLink: decision === 'Done' ? resolutionLink : undefined,
     }
 
     try {
@@ -191,6 +197,27 @@ export default function ReviewQueue() {
                 </button>
               ))}
             </div>
+
+            {decision === 'Done' && (
+              <>
+                <div className="divider" />
+                <div className="notes-label">How did you address this?</div>
+                <textarea
+                  value={resolutionNote}
+                  onChange={e => setResNote(e.target.value)}
+                  placeholder="Optional — describe how this was resolved…"
+                  style={{ marginBottom: 8 }}
+                />
+                <div className="notes-label">Result link</div>
+                <input
+                  type="text"
+                  value={resolutionLink}
+                  onChange={e => setResLink(e.target.value)}
+                  placeholder="Optional — VOD, video, stream URL…"
+                  style={{ marginBottom: 14 }}
+                />
+              </>
+            )}
 
             <div className="divider" />
 

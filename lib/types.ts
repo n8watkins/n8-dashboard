@@ -16,6 +16,8 @@ export interface SuggestionDoc {
   internalNotes: string
   preview: string  // first ~120 chars of suggestion text
   title: string    // first sentence, truncated to 58 chars
+  resolutionNote?: string
+  resolutionLink?: string
 }
 
 // Client-side shape (id included, Timestamp as Date)
@@ -39,6 +41,9 @@ export interface ActivityLogDoc {
   type: string
   source: string
   preview: string
+  oldResolutionNote?: string
+  newResolutionNote?: string
+  resolutionChanged?: boolean
 }
 
 export interface ActivityLogEntry extends Omit<ActivityLogDoc, 'timestamp'> {
@@ -54,6 +59,8 @@ export interface SaveReviewPayload {
   status: SuggestionStatus
   internalNotes: string
   actionSource: 'queue' | 'browser'
+  resolutionNote?: string
+  resolutionLink?: string
 }
 
 // ─── Form submission payload (public form → API) ──────────────────────────────

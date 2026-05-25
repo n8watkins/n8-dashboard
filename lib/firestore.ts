@@ -43,10 +43,12 @@ function docToSuggestion(id: string, data: Record<string, unknown>): Suggestion 
     username:      String(data.username || ''),
     extra:         String(data.extra || ''),
     source:        String(data.source || ''),
-    status:        normalizeStatus(String(data.status || 'New')) as SuggestionStatus,
-    internalNotes: String(data.internalNotes || ''),
-    preview:       String(data.preview || makePreview(String(data.suggestion || ''))),
-    title:         String(data.title || makeTitle(String(data.suggestion || ''))),
+    status:         normalizeStatus(String(data.status || 'New')) as SuggestionStatus,
+    internalNotes:  String(data.internalNotes || ''),
+    preview:        String(data.preview || makePreview(String(data.suggestion || ''))),
+    title:          String(data.title || makeTitle(String(data.suggestion || ''))),
+    resolutionNote: data.resolutionNote != null ? String(data.resolutionNote) : undefined,
+    resolutionLink: data.resolutionLink != null ? String(data.resolutionLink) : undefined,
   }
 }
 
@@ -222,10 +224,19 @@ export async function saveReview(payload: SaveReviewPayload): Promise<Stats> {
   const oldStatus = String(oldData.status || '')
   const oldNote   = String(oldData.internalNotes || '')
 
-  await updateDoc(ref, {
+  const oldResolutionNote = oldData.resolutionNote != null ? String(oldData.resolutionNote) : ''
+  const newResolutionNote = payload.resolutionNote ?? ''
+  const newResolutionLink = payload.resolutionLink ?? ''
+  const resolutionChanged = oldResolutionNote !== newResolutionNote
+
+  const updatePayload: Record<string, unknown> = {
     status:        payload.status,
     internalNotes: payload.internalNotes,
-  })
+    resolutionNote: newResolutionNote,
+    resolutionLink: newResolutionLink,
+  }
+
+  await updateDoc(ref, updatePayload)
 
   const statusChanged = oldStatus !== payload.status
   const noteChanged   = oldNote   !== payload.internalNotes
@@ -236,19 +247,22 @@ export async function saveReview(payload: SaveReviewPayload): Promise<Stats> {
   else if (noteChanged)                                  action = 'Note updated'
 
   await addDoc(collection(db, 'activity_log'), {
-    timestamp:    Timestamp.now(),
+    timestamp:          Timestamp.now(),
     action,
-    actionSource: payload.actionSource,
-    suggestionId: payload.suggestionId,
+    actionSource:       payload.actionSource,
+    suggestionId:       payload.suggestionId,
     oldStatus,
-    newStatus:    payload.status,
+    newStatus:          payload.status,
     oldNote,
-    newNote:      payload.internalNotes,
-    noteChanged:  oldNote !== payload.internalNotes,
-    category:     String(oldData.category || ''),
-    type:         String(oldData.type || ''),
-    source:       String(oldData.source || ''),
-    preview:      String(oldData.preview || ''),
+    newNote:            payload.internalNotes,
+    noteChanged:        oldNote !== payload.internalNotes,
+    category:           String(oldData.category || ''),
+    type:               String(oldData.type || ''),
+    source:             String(oldData.source || ''),
+    preview:            String(oldData.preview || ''),
+    oldResolutionNote,
+    newResolutionNote,
+    resolutionChanged,
   })
 
   return fetchStats()

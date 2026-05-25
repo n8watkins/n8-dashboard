@@ -55,10 +55,12 @@ export default function SuggestionBrowser() {
   const [status, setStatus]             = useState('')
 
   const [selected, setSelected]         = useState<Suggestion | null>(null)
-  const [selectedStatus, setSelectedStatus] = useState<SuggestionStatus>('New')
-  const [selectedNotes, setSelectedNotes]   = useState('')
-  const [saving, setSaving]             = useState(false)
-  const [saveState, setSaveState]       = useState<'idle' | 'saved' | 'error'>('idle')
+  const [selectedStatus, setSelectedStatus]   = useState<SuggestionStatus>('New')
+  const [selectedNotes, setSelectedNotes]     = useState('')
+  const [selectedResNote, setSelectedResNote] = useState('')
+  const [selectedResLink, setSelectedResLink] = useState('')
+  const [saving, setSaving]                   = useState(false)
+  const [saveState, setSaveState]             = useState<'idle' | 'saved' | 'error'>('idle')
 
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -109,16 +111,20 @@ export default function SuggestionBrowser() {
     setSelected(s)
     setSelectedStatus(s.status)
     setSelectedNotes(s.internalNotes)
+    setSelectedResNote(s.resolutionNote || '')
+    setSelectedResLink(s.resolutionLink || '')
   }
 
   async function handleSave() {
     if (!selected || saving) return
     setSaving(true)
     const payload: SaveReviewPayload = {
-      suggestionId:  selected.id,
-      status:        selectedStatus,
-      internalNotes: selectedNotes,
-      actionSource:  'browser',
+      suggestionId:   selected.id,
+      status:         selectedStatus,
+      internalNotes:  selectedNotes,
+      actionSource:   'browser',
+      resolutionNote: selectedResNote,
+      resolutionLink: selectedResLink,
     }
     try {
       await saveReview(payload)
@@ -126,7 +132,13 @@ export default function SuggestionBrowser() {
       await loadSuggestions()
       // Refresh the detail panel
       const refreshed = await fetchSuggestion(selected.id)
-      if (refreshed) { setSelected(refreshed); setSelectedStatus(refreshed.status); setSelectedNotes(refreshed.internalNotes) }
+      if (refreshed) {
+        setSelected(refreshed)
+        setSelectedStatus(refreshed.status)
+        setSelectedNotes(refreshed.internalNotes)
+        setSelectedResNote(refreshed.resolutionNote || '')
+        setSelectedResLink(refreshed.resolutionLink || '')
+      }
       setTimeout(() => setSaveState('idle'), 900)
     } catch {
       setSaveState('error')
@@ -253,6 +265,26 @@ export default function SuggestionBrowser() {
                   </button>
                 ))}
               </div>
+
+              {selectedStatus === 'Done' && (
+                <>
+                  <div className="notes-label">How did you address this?</div>
+                  <textarea
+                    value={selectedResNote}
+                    onChange={e => setSelectedResNote(e.target.value)}
+                    placeholder="Optional — describe how this was resolved…"
+                    style={{ marginBottom: 8 }}
+                  />
+                  <div className="notes-label">Result link</div>
+                  <input
+                    type="text"
+                    value={selectedResLink}
+                    onChange={e => setSelectedResLink(e.target.value)}
+                    placeholder="Optional — VOD, video, stream URL…"
+                    style={{ marginBottom: 14 }}
+                  />
+                </>
+              )}
 
               <div className="notes-label">Internal Note</div>
               <textarea
