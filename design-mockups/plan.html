@@ -1945,19 +1945,18 @@ env:
       </section>
 
       <!-- ===================================================
-           v2 PREVIEW
+           v2 REMAINING
            =================================================== -->
       <section class="plan-section" id="v2-preview">
         <div class="plan-section-head">
           <span class="num">C3</span>
-          <h2>v2 remaining (queued, not in this plan)</h2>
+          <h2>v2 remaining</h2>
           <span class="meta">do not start until v2.7 ships</span>
         </div>
         <ul class="plan-prose">
-          <li><strong>Submitter follow-up emails on status change</strong></li>
-          <li><strong>Weekly digest email</strong> (Firebase scheduled function / Cloud Scheduler)</li>
-          <li><strong>Optional third-party hand-off</strong> (Notion / Trello webhook on Active status)</li>
+          <li><strong>Weekly digest email</strong> — Firebase scheduled function (Cloud Scheduler), fires every Monday. Summary of new submissions, decisions made, and open active items for the week. Sent to <code>NOTIFY_EMAIL_TO</code>.</li>
         </ul>
+        <p class="plan-prose" style="font-size:12px;"><em>Removed: submitter follow-up emails (not collecting submitter emails). Removed: third-party hand-off (this app is the integration).</em></p>
       </section>
 
       <!-- ===================================================
