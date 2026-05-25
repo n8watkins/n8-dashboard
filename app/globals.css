@@ -211,6 +211,24 @@ h2 {
 .pill.type     { background: #052e16; color: #86efac; border-color: #166534; }
 .pill.note     { color: var(--amber); border-color: #78350f; background: var(--amber-bg); }
 
+/* Status pill dot — only on status pills, not source/type/note */
+.pill::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+.pill.discord::before,
+.pill.youtube::before,
+.pill.twitch::before,
+.pill.source::before,
+.pill.type::before,
+.pill.note::before { display: none; }
+
 /* ─── Suggestion blocks ───────────────────────────────────────────────────── */
 .suggestion-block, .why-block, .detail-cell {
   background: var(--panel-2);
