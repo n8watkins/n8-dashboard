@@ -1,4 +1,7 @@
 /* ─── Design tokens (your exact color system) ─────────────────────────────── */
+/* Fonts are loaded by next/font in app/layout.tsx and exposed as CSS vars:
+   --font-body (Inter), --font-display (Space Grotesk), --font-mono (JetBrains Mono).
+   They're set on <html> and available everywhere. */
 :root {
   --bg:          #0a0f0a;
   --panel:       #111911;
@@ -27,12 +30,14 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
   min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss01', 'cv11';
 }
 
 a { color: var(--green); text-decoration: none; }
@@ -57,8 +62,19 @@ a:hover { text-decoration: underline; }
 .topbar-links { font-size: 13px; }
 
 /* ─── Typography ──────────────────────────────────────────────────────────── */
-h1 { font-size: 22px; font-weight: 650; margin-bottom: 4px; }
-h2 { font-size: 15px; font-weight: 650; }
+h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+h2 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
 
 .subtitle {
   font-size: 13px;
@@ -83,9 +99,11 @@ h2 { font-size: 15px; font-weight: 650; }
 }
 
 .card-meta {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   color: var(--muted);
   white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 /* ─── Tabs ────────────────────────────────────────────────────────────────── */
@@ -158,10 +176,12 @@ h2 { font-size: 15px; font-weight: 650; }
 }
 
 .pill b {
+  font-family: var(--font-mono);
   font-size: 9px;
-  letter-spacing: .08em;
+  letter-spacing: .1em;
   text-transform: uppercase;
-  opacity: .7;
+  opacity: .75;
+  font-weight: 600;
 }
 
 .pill-text {
@@ -200,10 +220,11 @@ h2 { font-size: 15px; font-weight: 650; }
 .suggestion-block { border-color: rgba(74, 222, 128, 0.2); }
 
 .field-label {
+  font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .12em;
   color: var(--green);
   margin-bottom: 5px;
 }
@@ -286,10 +307,11 @@ select option { background: #111911; }
 }
 
 .cur-label {
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 10px;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: .07em;
+  letter-spacing: .12em;
 }
 
 .cur-badge {
@@ -303,10 +325,11 @@ select option { background: #111911; }
 }
 
 .section-lbl, .notes-label {
+  font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .12em;
   color: var(--muted);
   margin-bottom: 8px;
 }
@@ -417,8 +440,10 @@ textarea { height: 90px; resize: vertical; margin-bottom: 4px; }
 .log-month > summary::-webkit-details-marker { display: none; }
 
 .year-summary {
-  font-size: 18px;
+  font-family: var(--font-display);
+  font-size: 20px;
   font-weight: 700;
+  letter-spacing: -0.015em;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -464,12 +489,25 @@ details:not([open]) .chev { transform: rotate(0deg); }
 .log-month:not([open]) .month-head { border-bottom: none; }
 
 .month-title-wrap { display: flex; align-items: center; gap: 8px; }
-.month-title      { font-size: 15px; font-weight: 650; color: var(--green); }
+.month-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--green);
+}
 .month-stats, .pill-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 
 .day-group { padding: 12px 14px; border-bottom: 1px solid rgba(42,63,42,.65); }
 .day-group:last-child { border-bottom: none; }
-.day-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+.day-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 8px;
+}
 
 .log-column-head {
   display: grid;
@@ -478,10 +516,11 @@ details:not([open]) .chev { transform: rotate(0deg); }
   padding: 0 0 8px;
   border-bottom: 1px solid rgba(42,63,42,.75);
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 750;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .12em;
 }
 
 .log-item {
@@ -499,7 +538,12 @@ details:not([open]) .chev { transform: rotate(0deg); }
 .log-item:hover    { background: rgba(74, 222, 128, 0.035); }
 .log-item:first-child { border-top: none; }
 
-.time { color: var(--muted); font-size: 12px; }
+.time {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
 
 .status-change     { color: var(--muted); font-size: 12px; white-space: nowrap; text-align: right; }
 .status-change strong { color: var(--text); }
@@ -509,7 +553,15 @@ details:not([open]) .chev { transform: rotate(0deg); }
 .open-hint         { color: var(--muted); font-size: 11px; opacity: .8; }
 .log-item:hover .open-hint { color: var(--green); opacity: 1; }
 
-.note-label { font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; color: var(--amber); margin-bottom: 3px; }
+.note-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--amber);
+  margin-bottom: 3px;
+}
 .note-box   { margin-top: 7px; border-left: 2px solid #78350f; padding: 7px 9px; background: rgba(251,191,36,.06); color: #d6bc72; font-size: 12px; border-radius: 8px; }
 
 /* ─── Public form ─────────────────────────────────────────────────────────── */
@@ -521,7 +573,13 @@ details:not([open]) .chev { transform: rotate(0deg); }
 
 .form-card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
 
-.form-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+.form-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 6px;
+}
 .form-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
 
 .form-field { margin-bottom: 18px; }
@@ -637,6 +695,28 @@ details:not([open]) .chev { transform: rotate(0deg); }
   color: var(--red);
   font-size: 13px;
   margin-top: 12px;
+}
+
+/* ─── Brand mark ─────────────────────────────────────────────────────────── */
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, #4ade80 0%, #a855f7 100%);
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.35);
+  flex-shrink: 0;
+}
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  line-height: 1.1;
+}
+.brand-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .12em;
+  margin-top: 2px;
 }
 
 /* ─── Responsive ──────────────────────────────────────────────────────────── */

@@ -4,9 +4,10 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth'
 import { auth, googleProvider } from '@/lib/firebase'
 import { ADMIN_EMAILS } from '@/lib/config'
-import ReviewQueue   from '@/components/admin/ReviewQueue'
-import SuggestionBrowser from '@/components/admin/SuggestionBrowser'
-import ActivityLog   from '@/components/admin/ActivityLog'
+import ReviewQueue        from '@/components/admin/ReviewQueue'
+import SuggestionBrowser  from '@/components/admin/SuggestionBrowser'
+import ActivityLog        from '@/components/admin/ActivityLog'
+import { Brand }          from '@/components/Brand'
 
 type Tab = 'queue' | 'browse' | 'log'
 
@@ -93,10 +94,7 @@ export default function AdminPage() {
   return (
     <div className="shell">
       <div className="topbar">
-        <div>
-          <h1>Suggestion Review</h1>
-          <p className="subtitle">Review new suggestions, manage active ideas, and browse the archive.</p>
-        </div>
+        <Brand subtitle="Suggestion Review" />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--muted)' }}>
           <span>{user.email}</span>
           <button
