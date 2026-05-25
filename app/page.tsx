@@ -65,6 +65,14 @@ export default function SuggestionFormPage() {
   return (
     <div className="form-shell">
       <div className="form-card">
+        <div className="brand-mark form-brand-mark" />
+
+        {validSource && (
+          <div className="form-source-tag">
+            Responding from <strong>{validSource}</strong>
+          </div>
+        )}
+
         <h1 className="form-title">Nasty N8 Suggestion Box</h1>
         <p className="form-desc">
           Got an idea, problem, content request, or community suggestion?
@@ -75,14 +83,6 @@ export default function SuggestionFormPage() {
           on stream, turned into a poll, or shared publicly in the Nasty N8 community.
           Don't submit anything private or personal.
         </p>
-
-        <div className="brand-mark form-brand-mark" />
-
-        {validSource && (
-          <div className="form-source-tag">
-            Responding from <strong>{validSource}</strong>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit}>
           {/* Category */}
