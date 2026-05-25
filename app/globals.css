@@ -1162,6 +1162,23 @@ details:not([open]) .chev { transform: rotate(0deg); }
   margin-top: 12px;
 }
 
+/* per-channel result row */
+.recap-channel-results {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.recap-channel {
+  font-size: 13px;
+  font-weight: 500;
+}
+.recap-channel.sent    { color: var(--green); }
+.recap-channel.skipped { color: var(--muted); }
+.recap-channel.error   { color: var(--red); }
+
 .recap-warnings { margin-top: 10px; }
 .recap-warn-line {
   font-size: 12px;

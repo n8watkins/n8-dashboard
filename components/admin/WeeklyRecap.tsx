@@ -1,8 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { getIdToken } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import type { RecapStats } from '@/app/api/weekly-recap/route'
+import type { RecapStats, ChannelResult } from '@/app/api/weekly-recap/route'
 
 // ─── Weekly Recap panel (admin) ───────────────────────────────────────────────
 
@@ -12,12 +12,22 @@ function fmt(n: number, word: string) {
   return `${n} ${word}${n !== 1 ? 's' : ''}`
 }
 
+function channelLabel(result: ChannelResult, name: string): string {
+  if (result === 'sent')    return `✓ ${name}`
+  if (result === 'skipped') return `— ${name} (not configured)`
+  return `⚠ ${name} failed`
+}
+
 export default function WeeklyRecap() {
   const [status,   setStatus]   = useState<Status>('idle')
   const [stats,    setStats]    = useState<RecapStats | null>(null)
+  const [channels, setChannels] = useState<{ email: ChannelResult; discord: ChannelResult } | null>(null)
   const [warnings, setWarnings] = useState<string[]>([])
   const [error,    setError]    = useState('')
   const [open,     setOpen]     = useState(false)
+
+  // FIX #7: in-flight ref prevents double-send on rapid clicks.
+  const inFlight = useRef(false)
 
   async function fetchToken(): Promise<string | null> {
     const user = auth.currentUser
@@ -26,12 +36,14 @@ export default function WeeklyRecap() {
   }
 
   async function handlePreview() {
+    if (inFlight.current) return
+    inFlight.current = true
     setStatus('loading')
     setError('')
-    const token = await fetchToken()
-    if (!token) { setStatus('error'); setError('Not signed in.'); return }
-
     try {
+      const token = await fetchToken()
+      if (!token) { setStatus('error'); setError('Not signed in.'); return }
+
       const res  = await fetch('/api/weekly-recap?dry=true', {
         headers: { 'x-firebase-token': token },
       })
@@ -42,39 +54,53 @@ export default function WeeklyRecap() {
     } catch (e) {
       setError(String(e))
       setStatus('error')
+    } finally {
+      inFlight.current = false
     }
   }
 
   async function handleSend() {
+    if (inFlight.current) return
+    inFlight.current = true
     setStatus('sending')
     setError('')
-    const token = await fetchToken()
-    if (!token) { setStatus('error'); setError('Not signed in.'); return }
-
     try {
+      const token = await fetchToken()
+      if (!token) { setStatus('error'); setError('Not signed in.'); return }
+
       const res  = await fetch('/api/weekly-recap', {
         method:  'POST',
         headers: { 'x-firebase-token': token },
       })
-      const data = await res.json() as { ok?: boolean; stats?: RecapStats; warnings?: string[]; error?: string }
+      const data = await res.json() as {
+        ok?:       boolean
+        stats?:    RecapStats
+        channels?: { email: ChannelResult; discord: ChannelResult }
+        warnings?: string[]
+        error?:    string
+      }
       if (!data.ok) throw new Error(data.error || 'Unknown error')
       setStats(data.stats ?? null)
+      setChannels(data.channels ?? null)
       setWarnings(data.warnings ?? [])
       setStatus('sent')
     } catch (e) {
       setError(String(e))
       setStatus('error')
+    } finally {
+      inFlight.current = false
     }
   }
 
   function reset() {
     setStatus('idle')
     setStats(null)
+    setChannels(null)
     setWarnings([])
     setError('')
   }
 
-  const loading  = status === 'loading' || status === 'sending'
+  const loading = status === 'loading' || status === 'sending'
 
   return (
     <div className="weekly-recap-panel">
@@ -82,7 +108,8 @@ export default function WeeklyRecap() {
       <div className="recap-header" onClick={() => setOpen(v => !v)} style={{ cursor: 'pointer', userSelect: 'none' }}>
         <span className="recap-title">
           Weekly Recap
-          <span className="chev" style={{ marginLeft: 6, display: 'inline-block', transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>›</span>
+          {/* FIX #5: rotate(0deg) so the CSS transition can interpolate back */}
+          <span className="chev" style={{ marginLeft: 6, display: 'inline-block', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>›</span>
         </span>
         {status === 'sent' && <span className="recap-badge sent">Sent ✓</span>}
         {status === 'error' && <span className="recap-badge error">Error</span>}
@@ -129,15 +156,26 @@ export default function WeeklyRecap() {
               )}
               {status === 'sent' && (
                 <>
+                  {/* FIX #2: show accurate per-channel outcome */}
+                  <div className="recap-channel-results">
+                    {channels
+                      ? (
+                        <>
+                          <span className={`recap-channel ${channels.email}`}>
+                            {channelLabel(channels.email, 'Email')}
+                          </span>
+                          <span className={`recap-channel ${channels.discord}`}>
+                            {channelLabel(channels.discord, 'Discord')}
+                          </span>
+                        </>
+                      )
+                      : <span className="recap-sent-note">✓ Sent.</span>
+                    }
+                  </div>
                   {warnings.length > 0 && (
                     <div className="recap-warnings">
                       {warnings.map((w, i) => <p key={i} className="recap-warn-line">⚠ {w}</p>)}
                     </div>
-                  )}
-                  {warnings.length === 0 && (
-                    <p className="recap-sent-note">
-                      ✓ Email and Discord sent.
-                    </p>
                   )}
                   <button className="recap-btn ghost" onClick={reset} style={{ marginTop: 12 }}>Done</button>
                 </>
@@ -165,7 +203,6 @@ function RecapPreview({ stats: s }: { stats: RecapStats }) {
         {s.weekStart} – {s.weekEnd}
       </div>
 
-      {/* New submissions */}
       <div className="recap-section">
         <div className="recap-section-label">new submissions</div>
         <div className="recap-big-num">{total}</div>
@@ -184,14 +221,12 @@ function RecapPreview({ stats: s }: { stats: RecapStats }) {
         )}
       </div>
 
-      {/* Flagged */}
       {s.submissions.flagged > 0 && (
         <div className="recap-flagged-note">
           ⚠ {fmt(s.submissions.flagged, 'submission')} flagged for review
         </div>
       )}
 
-      {/* Top categories */}
       {s.submissions.byCategory.length > 0 && (
         <div className="recap-section">
           <div className="recap-section-label">top categories</div>
@@ -206,7 +241,6 @@ function RecapPreview({ stats: s }: { stats: RecapStats }) {
         </div>
       )}
 
-      {/* Pipeline */}
       <div className="recap-section">
         <div className="recap-section-label">pipeline snapshot</div>
         <div className="recap-stat-pills">
@@ -225,7 +259,6 @@ function RecapPreview({ stats: s }: { stats: RecapStats }) {
         </div>
       </div>
 
-      {/* Moved to done */}
       <div className="recap-section">
         <div className="recap-section-label">
           ✓ moved to done ({s.actionsThisWeek.movedToDone.length})
@@ -240,7 +273,6 @@ function RecapPreview({ stats: s }: { stats: RecapStats }) {
         }
       </div>
 
-      {/* Picked up */}
       <div className="recap-section">
         <div className="recap-section-label">
           → picked up ({s.actionsThisWeek.movedToActive.length})
@@ -256,7 +288,7 @@ function RecapPreview({ stats: s }: { stats: RecapStats }) {
       </div>
 
       <div className="recap-footer-note">
-        {fmt(s.actionsThisWeek.total, 'review decision')} made this week
+        {fmt(s.actionsThisWeek.total, 'item')} reviewed this week
       </div>
     </div>
   )
