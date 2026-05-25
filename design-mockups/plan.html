@@ -1879,6 +1879,38 @@ env:
       </article>
 
       <!-- ===================================================
+           v1.5 / v2.5 / v2.6 SESSIONS
+           =================================================== -->
+      <section class="plan-section" id="v15-sessions">
+        <div class="plan-section-head">
+          <span class="num">C0</span>
+          <h2>Post-v1 sessions (before full v2)</h2>
+        </div>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">v1+ hardening (done)</h3>
+        <ul class="plan-prose">
+          <li><strong>Honeypot field</strong> — hidden input; bots fill it, API silently discards</li>
+          <li><strong>Field-level validation + char counts</strong> — inline errors on blur/submit, 20–2000 char limits (suggestion), 10–1000 (why), 500 (extra)</li>
+          <li><strong>reCAPTCHA v3 scaffold</strong> — code fully wired, gated on env vars (activated in v2.6)</li>
+          <li><strong>Admin data caching</strong> — SourceDashboard 60s localStorage TTL; admin tabs lazy-mount (no re-fetch on tab switch)</li>
+          <li><strong>Layout fix</strong> — brand mark + source tag now correctly appear above form title</li>
+        </ul>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin:18px 0 10px;color:var(--text);">v2.5 — flow &amp; feel (future session)</h3>
+        <ul class="plan-prose">
+          <li><strong>Keyboard shortcuts in Review Queue</strong> — 1/2/3/4 for decision, Enter to save + advance</li>
+        </ul>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin:18px 0 10px;color:var(--text);">v2.6 — connect real credentials (future session)</h3>
+        <p class="plan-prose">All three features are <strong>already coded and gated on env vars</strong>. This session is just plugging in real values — no code changes needed.</p>
+        <ul class="plan-prose">
+          <li><strong>reCAPTCHA v3</strong> — create v3 key at <code>google.com/recaptcha/admin/create</code>, add domain + localhost; set <code>NEXT_PUBLIC_RECAPTCHA_SITE_KEY</code> and <code>RECAPTCHA_SECRET_KEY</code></li>
+          <li><strong>Email notifications</strong> — Gmail app password at <code>myaccount.google.com/apppasswords</code>; set <code>NOTIFY_EMAIL_PASS</code>, <code>NOTIFY_EMAIL_FROM</code>, <code>NOTIFY_EMAIL_TO</code></li>
+          <li><strong>Discord notifications</strong> — channel webhook: Discord → right-click channel → Edit Channel → Integrations → Webhooks → New Webhook → Copy URL; set <code>DISCORD_WEBHOOK_URL</code></li>
+        </ul>
+      </section>
+
+      <!-- ===================================================
            v2 PREVIEW
            =================================================== -->
       <section class="plan-section" id="v2-preview">
@@ -1890,7 +1922,6 @@ env:
         <p class="plan-prose">Don't begin v2 work until every v1 task above is done and the app is live. The list below is a placeholder so the executor knows what's coming and can think about extensibility but should not act on it.</p>
         <ul class="plan-prose">
           <li><strong>Discord <code>/suggest</code> slash command</strong> via interactions endpoint (HTTP-only, no hosted bot)</li>
-          <li><strong>Optional email field on the form</strong> for v2 follow-ups</li>
           <li><strong>Submitter follow-up emails on status change</strong></li>
           <li><strong>Weekly digest email</strong> (Firebase scheduled function / Cloud Scheduler)</li>
           <li><strong>Optional third-party hand-off</strong> (Notion / Trello webhook on Active status)</li>
