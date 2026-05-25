@@ -1901,9 +1901,10 @@ env:
           <li><strong>Keyboard shortcuts in Review Queue</strong> — 1/2/3/4 for decision, Enter to save + advance</li>
         </ul>
 
-        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin:18px 0 10px;color:var(--text);">v2.6 — connect real credentials (future session)</h3>
-        <p class="plan-prose">All three features are <strong>already coded and gated on env vars</strong>. This session is just plugging in real values — no code changes needed.</p>
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin:18px 0 10px;color:var(--text);">v2.6 — launch session (deploy + real credentials)</h3>
+        <p class="plan-prose">The deploy (FU-09) and credential hookups happen together in one session. Code is done — this is all config and CLI work.</p>
         <ul class="plan-prose">
+          <li><strong>FU-09: Deploy to Firebase App Hosting</strong> — <code>firebase init apphosting</code>, connect GitHub repo, store secrets in Secret Manager, <code>firebase deploy --only firestore</code>, push to trigger App Hosting build. Full runbook in the FU-09 task card above.</li>
           <li><strong>reCAPTCHA v3</strong> — create v3 key at <code>google.com/recaptcha/admin/create</code>, add domain + localhost; set <code>NEXT_PUBLIC_RECAPTCHA_SITE_KEY</code> and <code>RECAPTCHA_SECRET_KEY</code></li>
           <li><strong>Email notifications</strong> — Gmail app password at <code>myaccount.google.com/apppasswords</code>; set <code>NOTIFY_EMAIL_PASS</code>, <code>NOTIFY_EMAIL_FROM</code>, <code>NOTIFY_EMAIL_TO</code></li>
           <li><strong>Discord notifications</strong> — channel webhook: Discord → right-click channel → Edit Channel → Integrations → Webhooks → New Webhook → Copy URL; set <code>DISCORD_WEBHOOK_URL</code></li>
