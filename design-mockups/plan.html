@@ -1912,17 +1912,48 @@ env:
       </section>
 
       <!-- ===================================================
+           v2.7
+           =================================================== -->
+      <section class="plan-section" id="v27">
+        <div class="plan-section-head">
+          <span class="num">C2</span>
+          <h2>v2.7 — Discord <code>/suggest</code> command</h2>
+          <span class="meta">do not start until v2.6 ships</span>
+        </div>
+        <p class="plan-prose">Slash command that responds with an ephemeral link to the web form pre-filled with <code>?source=Discord</code>. HTTP-only — no hosted bot, no WebSocket.</p>
+        <h4 style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:8px;">How it works</h4>
+        <ol class="plan-prose">
+          <li>User types <code>/suggest</code> in your Discord server</li>
+          <li>Discord POSTs to <code>/api/discord/interactions</code></li>
+          <li>Server verifies Ed25519 signature, responds with ephemeral message: <em>"Got a suggestion? Submit it here 👇 https://your-domain.com/?source=Discord"</em></li>
+          <li>User clicks → web form opens pre-filled with source=Discord → normal submission flow</li>
+        </ol>
+        <h4 style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin:14px 0 8px;">Files</h4>
+        <ul class="plan-prose">
+          <li><code>app/api/discord/interactions/route.ts</code> — NEW. Verify signature, handle PING, return link message</li>
+          <li><code>scripts/register-discord-command.ts</code> — NEW. One-time script to register <code>/suggest</code> with Discord REST API</li>
+          <li><code>.env.local.example</code> — add <code>DISCORD_PUBLIC_KEY</code> and <code>DISCORD_APP_ID</code></li>
+        </ul>
+        <h4 style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin:14px 0 8px;">Setup (one-time)</h4>
+        <ol class="plan-prose">
+          <li>Create a Discord application at <a href="https://discord.com/developers/applications">discord.com/developers/applications</a></li>
+          <li>Copy <strong>Application ID</strong> and <strong>Public Key</strong> → env vars</li>
+          <li>Set <strong>Interactions Endpoint URL</strong> to <code>https://your-domain.com/api/discord/interactions</code></li>
+          <li>Run <code>npx tsx scripts/register-discord-command.ts</code> to register the slash command (needs a Bot token for the one-time registration only)</li>
+          <li>Invite the app to your server with <code>applications.commands</code> scope</li>
+        </ol>
+      </section>
+
+      <!-- ===================================================
            v2 PREVIEW
            =================================================== -->
       <section class="plan-section" id="v2-preview">
         <div class="plan-section-head">
-          <span class="num">C1</span>
-          <h2>v2 preview (queued, not in this plan)</h2>
-          <span class="meta">do not start until v1 ships</span>
+          <span class="num">C3</span>
+          <h2>v2 remaining (queued, not in this plan)</h2>
+          <span class="meta">do not start until v2.7 ships</span>
         </div>
-        <p class="plan-prose">Don't begin v2 work until every v1 task above is done and the app is live. The list below is a placeholder so the executor knows what's coming and can think about extensibility but should not act on it.</p>
         <ul class="plan-prose">
-          <li><strong>Discord <code>/suggest</code> slash command</strong> via interactions endpoint (HTTP-only, no hosted bot)</li>
           <li><strong>Submitter follow-up emails on status change</strong></li>
           <li><strong>Weekly digest email</strong> (Firebase scheduled function / Cloud Scheduler)</li>
           <li><strong>Optional third-party hand-off</strong> (Notion / Trello webhook on Active status)</li>
