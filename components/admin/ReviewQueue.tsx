@@ -6,6 +6,7 @@ import { STATUS_OPTIONS, SOURCE_OPTIONS } from '@/lib/config'
 import { subscribeNextNew, fetchRelated, fetchStats, saveReview, type Stats } from '@/lib/firestore'
 import { statusClass, sourcePillClass } from '@/lib/utils'
 import SuggestionDetail from './SuggestionDetail'
+import CaughtUp from './CaughtUp'
 
 // ─── Review Queue ─────────────────────────────────────────────────────────────
 
@@ -114,7 +115,7 @@ export default function ReviewQueue() {
           <div className="card">
             {current
               ? <SuggestionDetail item={current} title="Current New Suggestion" />
-              : <div className="empty-state">No new suggestions — queue is clear! 🎉</div>
+              : <CaughtUp />
             }
           </div>
 

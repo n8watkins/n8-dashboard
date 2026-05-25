@@ -700,6 +700,61 @@ details:not([open]) .chev { transform: rotate(0deg); }
   margin-top: 12px;
 }
 
+/* ─── Caught-up hero ─────────────────────────────────────────────────────── */
+.caught-up {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 56px 32px;
+  gap: 16px;
+}
+.caught-up-check {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green) 0%, var(--purple) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  color: #062b14;
+  box-shadow: 0 0 32px rgba(74, 222, 128, 0.35);
+  flex-shrink: 0;
+}
+.caught-up-h1 {
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 0;
+}
+.caught-up-p {
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 380px;
+  line-height: 1.6;
+}
+.next-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+.next-action-card {
+  padding: 10px 16px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: border-color .12s, color .12s;
+}
+.next-action-card:hover {
+  border-color: var(--green);
+  color: var(--green);
+  text-decoration: none;
+}
+
 /* ─── Brand mark ─────────────────────────────────────────────────────────── */
 .brand { display: flex; align-items: center; gap: 12px; }
 .brand-mark {
