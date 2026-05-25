@@ -1,0 +1,2108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plan — Nasty N8 Suggestion Box (v1 execution)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .plan-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 48px;
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 32px 32px 96px;
+    }
+    .plan-toc {
+      position: sticky;
+      top: 96px;
+      align-self: start;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .toc-group { margin-bottom: 20px; }
+    .toc-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      padding-left: 8px;
+    }
+    .toc-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 120ms;
+      border-left: 2px solid transparent;
+    }
+    .toc-link:hover { color: var(--text); background: rgba(57, 255, 20, 0.04); text-shadow: none; }
+    .toc-link.active {
+      color: var(--neon);
+      border-left-color: var(--neon);
+      background: rgba(57, 255, 20, 0.06);
+    }
+    .toc-link .badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      letter-spacing: 0.05em;
+      margin-left: auto;
+    }
+    .badge.dp { background: rgba(176, 38, 255, 0.12); color: var(--purple-soft); }
+    .badge.fu { background: rgba(57, 255, 234, 0.12); color: var(--status-new); }
+    .badge.done { background: rgba(74,222,128,0.18); color: #86efac; }
+    .badge.v2 { background: rgba(255,215,0,0.12); color: var(--status-shipped); }
+    .badge.v3 { background: rgba(255, 68, 68, 0.10); color: var(--danger); }
+
+    .plan-main { min-width: 0; }
+
+    /* ===== Hero ===== */
+    .hero-card {
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 0%, rgba(57, 255, 20, 0.08), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(176, 38, 255, 0.06), transparent 70%),
+        var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px 36px 32px;
+      margin-bottom: 40px;
+    }
+    .hero-card .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: var(--neon);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .hero-card h1 {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 14px;
+    }
+    .hero-card h1 .accent {
+      background: linear-gradient(135deg, var(--neon), var(--purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero-card p {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      max-width: 760px;
+      margin-bottom: 12px;
+    }
+    .hero-card p:last-of-type { margin-bottom: 24px; }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      max-width: 760px;
+    }
+    .hero-stat { padding: 14px 18px; border-right: 1px solid var(--border); }
+    .hero-stat:last-child { border-right: 0; }
+    .hero-stat .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .hero-stat .val {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .hero-stat .val.good { color: var(--neon); }
+    .hero-stat .val.warn { color: var(--status-shipped); }
+
+    /* ===== Section ===== */
+    .plan-section { margin-bottom: 64px; scroll-margin-top: 96px; }
+    .plan-section-head {
+      display: flex; align-items: baseline; gap: 14px;
+      padding-bottom: 14px; margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .plan-section-head .num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+    .plan-section-head h2 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text);
+    }
+    .plan-section-head .meta {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .plan-prose { color: var(--text-muted); font-size: 15px; line-height: 1.7; margin-bottom: 20px; }
+    .plan-prose strong { color: var(--text); }
+    .plan-prose code {
+      font-family: var(--font-mono);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 13px;
+      color: var(--neon);
+    }
+    .plan-prose a { color: var(--neon); }
+    .plan-prose ul, .plan-prose ol { margin-left: 22px; margin-bottom: 16px; }
+    .plan-prose li { margin-bottom: 8px; }
+    .plan-prose li::marker { color: var(--neon); }
+
+    /* ===== Callout ===== */
+    .callout {
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .callout .icon {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .callout .body { flex: 1; font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .callout .body strong { color: var(--text); }
+    .callout.locked { background: rgba(57, 255, 20, 0.04); border: 1px solid var(--border-neon); }
+    .callout.locked .icon { background: var(--neon); color: #001000; }
+    .callout.open { background: rgba(255, 215, 0, 0.04); border: 1px solid rgba(255, 215, 0, 0.25); }
+    .callout.open .icon { background: var(--status-shipped); color: #1a1500; }
+    .callout.warning { background: rgba(255, 68, 68, 0.05); border: 1px solid rgba(255, 68, 68, 0.25); }
+    .callout.warning .icon { background: var(--danger); color: #fff; }
+    .callout.done { background: rgba(74,222,128,0.04); border: 1px solid rgba(74,222,128,0.3); }
+    .callout.done .icon { background: #4ade80; color: #052e16; }
+
+    /* ===== Spec table ===== */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .spec-table th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+    .spec-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--text-muted);
+    }
+    .spec-table tr:last-child td { border-bottom: 0; }
+    .spec-table td.name {
+      color: var(--text);
+      font-weight: 500;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .tiny-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      display: inline-block;
+    }
+    .tiny-tag.v1 { background: rgba(57, 255, 20, 0.12); color: var(--neon); }
+    .tiny-tag.v2 { background: rgba(255, 215, 0, 0.12); color: var(--status-shipped); }
+    .tiny-tag.v3 { background: rgba(255, 68, 68, 0.1); color: var(--danger); }
+    .tiny-tag.done { background: rgba(74,222,128,0.18); color: #86efac; }
+    .tiny-tag.dp { background: rgba(176, 38, 255, 0.12); color: var(--purple-soft); }
+    .tiny-tag.fu { background: rgba(57, 255, 234, 0.12); color: var(--status-new); }
+    .tiny-tag.high { background: rgba(255, 68, 68, 0.12); color: var(--danger); }
+    .tiny-tag.med { background: rgba(255, 215, 0, 0.12); color: var(--status-shipped); }
+    .tiny-tag.low { background: rgba(138, 168, 138, 0.12); color: var(--text-muted); }
+    .tiny-tag.s { background: rgba(74, 222, 128, 0.15); color: #86efac; }
+    .tiny-tag.m { background: rgba(255, 215, 0, 0.12); color: var(--status-shipped); }
+    .tiny-tag.l { background: rgba(255, 68, 68, 0.12); color: var(--danger); }
+
+    /* ===== Code block ===== */
+    .code {
+      background: #050805;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code .k { color: var(--purple-soft); }
+    .code .s { color: var(--neon); }
+    .code .c { color: var(--text-dim); }
+    .code .t { color: var(--status-new); }
+    .code .f { color: var(--status-shipped); }
+
+    /* ===== Task card ===== */
+    .task {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+    .task-header {
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: rgba(20, 25, 20, 0.5);
+      border-bottom: 1px solid var(--border);
+    }
+    .task-id {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--neon);
+      border: 1px solid var(--border-neon);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .task-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .task-header .tags {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+      align-items: center;
+    }
+    .task-body { padding: 20px 22px 22px; }
+    .task-body h4 {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      margin: 14px 0 8px;
+      font-weight: 600;
+    }
+    .task-body h4:first-child { margin-top: 0; }
+    .task-goal {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 6px;
+    }
+    .task-body p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 10px;
+    }
+    .task-body p strong { color: var(--text); }
+    .task-body p code,
+    .task-body li code,
+    .task-body td code {
+      font-family: var(--font-mono);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+      color: var(--neon);
+    }
+    .task-body ul, .task-body ol {
+      margin-left: 22px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+    .task-body li { margin-bottom: 6px; }
+    .task-body li::marker { color: var(--neon); }
+    .files-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .files-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--text-muted);
+    }
+    .files-table tr:last-child td { border-bottom: 0; }
+    .files-table td:first-child {
+      font-family: var(--font-mono);
+      color: var(--neon);
+      width: 38%;
+      font-size: 11px;
+    }
+    .acceptance li {
+      list-style: none;
+      margin-left: 0;
+      padding-left: 22px;
+      position: relative;
+    }
+    .acceptance li::before {
+      content: '☐';
+      position: absolute;
+      left: 0;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    .watch li {
+      list-style: none;
+      margin-left: 0;
+      padding-left: 18px;
+      position: relative;
+      color: var(--text-muted);
+    }
+    .watch li::before {
+      content: '!';
+      position: absolute;
+      left: 0;
+      color: var(--status-shipped);
+      font-weight: 700;
+    }
+
+    @media (max-width: 1024px) {
+      .plan-layout { grid-template-columns: 1fr; gap: 24px; }
+      .plan-toc { position: relative; top: 0; max-height: none; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span>Nasty N8 / suggestion box</span>
+    </div>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="cards.html">Public cards</a>
+      <a href="admin.html">Admin layouts</a>
+      <a href="empty.html">Empty states</a>
+      <a href="concept.html">Concept</a>
+      <a href="plan.html" class="active">Plan</a>
+    </nav>
+    <div class="right">
+      <span>v1 execution plan · 2026-05-24</span>
+    </div>
+  </header>
+
+  <div class="plan-layout">
+    <!-- ============ TOC ============ -->
+    <aside class="plan-toc">
+      <div class="toc-group">
+        <div class="toc-label">Start here</div>
+        <a href="#snapshot" class="toc-link">Snapshot</a>
+        <a href="#conventions" class="toc-link">Working conventions</a>
+        <a href="#quality" class="toc-link">Quality bar</a>
+      </div>
+      <div class="toc-group">
+        <div class="toc-label">Context (read once)</div>
+        <a href="#stack" class="toc-link">Tech stack</a>
+        <a href="#schema" class="toc-link">Data model</a>
+        <a href="#config" class="toc-link">Config &amp; canonical lists</a>
+        <a href="#surfaces" class="toc-link">Existing surfaces</a>
+        <a href="#visual" class="toc-link">Visual direction</a>
+      </div>
+      <div class="toc-group">
+        <div class="toc-label">v1 design polish</div>
+        <a href="#DP-01" class="toc-link">DP-01 Brand mark <span class="badge dp">dp</span></a>
+        <a href="#DP-02" class="toc-link">DP-02 Palette tune <span class="badge dp">dp</span></a>
+        <a href="#DP-03" class="toc-link">DP-03 Caught-up hero <span class="badge dp">dp</span></a>
+        <a href="#DP-04" class="toc-link">DP-04 Browser empty <span class="badge dp">dp</span></a>
+        <a href="#DP-05" class="toc-link">DP-05 Log empty <span class="badge dp">dp</span></a>
+        <a href="#DP-06" class="toc-link">DP-06 Source greeting <span class="badge dp">dp</span></a>
+        <a href="#DP-07" class="toc-link">DP-07 Form polish <span class="badge dp">dp</span></a>
+        <a href="#DP-08" class="toc-link">DP-08 Pill glow <span class="badge dp">dp</span></a>
+        <a href="#DP-09" class="toc-link">DP-09 Source chips <span class="badge dp">dp</span></a>
+      </div>
+      <div class="toc-group">
+        <div class="toc-label">v1 functional</div>
+        <a href="#FU-01" class="toc-link">FU-01 Profanity list <span class="badge fu">fu</span></a>
+        <a href="#FU-02" class="toc-link">FU-02 Mod flag in schema <span class="badge fu">fu</span></a>
+        <a href="#FU-03" class="toc-link">FU-03 Mod UI in admin <span class="badge fu">fu</span></a>
+        <a href="#FU-04" class="toc-link">FU-04 Rate limiting <span class="badge fu">fu</span></a>
+        <a href="#FU-05" class="toc-link">FU-05 Resolution field <span class="badge fu">fu</span></a>
+        <a href="#FU-06" class="toc-link">FU-06 Source dashboard <span class="badge fu">fu</span></a>
+        <a href="#FU-07" class="toc-link">FU-07 Production URLs <span class="badge fu">fu</span></a>
+        <a href="#FU-08" class="toc-link">FU-08 Discord webhook <span class="badge fu">fu</span></a>
+        <a href="#FU-09" class="toc-link">FU-09 Deploy to Firebase <span class="badge fu">fu</span></a>
+        <a href="#FU-10" class="toc-link">FU-10 next/font done <span class="badge done">✓</span></a>
+      </div>
+      <div class="toc-group">
+        <div class="toc-label">Future preview</div>
+        <a href="#v2-preview" class="toc-link">v2 integrations <span class="badge v2">v2</span></a>
+        <a href="#v3-preview" class="toc-link">v3 AI + voice <span class="badge v3">v3</span></a>
+      </div>
+      <div class="toc-group">
+        <div class="toc-label">Reference</div>
+        <a href="#decisions" class="toc-link">Decision log</a>
+        <a href="#open" class="toc-link">Open questions</a>
+        <a href="#inventory" class="toc-link">File inventory</a>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN ============ -->
+    <main class="plan-main">
+
+      <!-- ============ SNAPSHOT ============ -->
+      <section class="hero-card" id="snapshot">
+        <div class="eyebrow">v1 execution plan · single source of truth</div>
+        <h1>Ship <span class="accent">Nasty N8 Suggestion Box</span> v1.</h1>
+        <p>The app already exists at <code>/home/natkins/projects/bf6-projects/suggestion-box/</code> — a Next.js 14 + Firebase intake tool that replaces a Google Forms/Sheets workflow. The core (form, admin queue, browser, activity log, Google auth, Firestore, optional Gmail notifications) is built and working. <strong>v1 is design polish + a few functional gaps + a real deploy.</strong></p>
+        <p>This document is the executable spec. Every task has an ID, a goal, a file list, a spec, acceptance criteria, and watch-outs. A weaker model can pick up any task and complete it without further input from the original designer.</p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="label">v1 progress</div>
+            <div class="val good">~80%</div>
+          </div>
+          <div class="hero-stat">
+            <div class="label">v1 tasks total</div>
+            <div class="val">19</div>
+          </div>
+          <div class="hero-stat">
+            <div class="label">v1 tasks done</div>
+            <div class="val good">1</div>
+          </div>
+          <div class="hero-stat">
+            <div class="label">next step</div>
+            <div class="val warn" style="font-size:14px;font-family:var(--font-mono);padding-top:6px;">DP-01 brand mark</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ WORKING CONVENTIONS ============ -->
+      <section class="plan-section" id="conventions">
+        <div class="plan-section-head">
+          <span class="num">A1</span>
+          <h2>Working conventions (read before any task)</h2>
+        </div>
+        <p class="plan-prose">These rules apply to every task in this plan. If a task contradicts them, the convention wins unless the task explicitly overrides it.</p>
+
+        <ol class="plan-prose">
+          <li><strong>One task = one commit.</strong> Use the task ID in the commit message subject, e.g., <code>DP-01: brand mark in admin nav</code>. Write a short body explaining what changed and why.</li>
+          <li><strong>Read the whole task card before touching code.</strong> Confirm the file list matches what you find in the repo. If a file the task references doesn't exist or has changed, stop and re-read the plan rather than guessing.</li>
+          <li><strong>Stay inside the task spec.</strong> Don't refactor unrelated code, don't rename things, don't introduce new abstractions, don't add features that aren't called out. Three similar lines is better than a premature abstraction.</li>
+          <li><strong>Don't add dependencies without explicit user approval.</strong> The stack is Next.js 14 + React 18 + firebase + firebase-admin + nodemailer + dotenv + tsx. Stick to it. No Tailwind, no UI libraries, no state management libs.</li>
+          <li><strong>CSS goes in <code>app/globals.css</code>.</strong> The app uses plain CSS — add new classes, don't rewrite existing ones unless the task says so. Follow the existing token system (<code>--bg</code>, <code>--panel</code>, <code>--green</code>, etc.).</li>
+          <li><strong>TypeScript must compile cleanly.</strong> Run <code>npx tsc --noEmit</code> before committing. No <code>any</code> types without a good reason. No <code>// @ts-ignore</code>.</li>
+          <li><strong>ESLint must pass.</strong> Run <code>npm run lint</code> before committing.</li>
+          <li><strong>Test in dev locally.</strong> Run <code>npm run dev</code> and visit the affected routes (<code>/</code>, <code>/admin</code>, etc.) before marking a task done. For backend changes, exercise the form end-to-end.</li>
+          <li><strong>Never deploy without explicit user permission.</strong> <code>vercel</code> and <code>firebase deploy</code> are user-triggered only.</li>
+          <li><strong>Never commit secrets.</strong> Keys live in <code>.env.local</code> (gitignored). If you need a new env var, document it in <code>.env.local.example</code> with a placeholder.</li>
+          <li><strong>When unsure, ask the user.</strong> Specifically: brand assets, profanity word list contents, production URLs, custom domain, and anything labeled "Open question" in this plan.</li>
+          <li><strong>Existing code is the reference for style.</strong> Look at <code>components/admin/ReviewQueue.tsx</code> and <code>app/page.tsx</code> for the React style; look at <code>lib/firestore.ts</code> and <code>lib/utils.ts</code> for the helper-function style. Match it.</li>
+          <li><strong>No comments in code unless the WHY is non-obvious.</strong> Don't restate what the code does. The <code>// ─── Section ────</code> divider comments in existing files are fine; follow that pattern for new files.</li>
+          <li><strong>Don't create new docs.</strong> Don't write <code>README</code> updates, design rationale files, or migration guides unless the task explicitly asks for it. The plan is the doc.</li>
+        </ol>
+
+        <div class="callout warning">
+          <span class="icon">!</span>
+          <div class="body"><strong>Critical:</strong> If you find a task whose spec doesn't match what's in the codebase (e.g., a file path has moved, an API has changed, a function was renamed), <strong>stop and report back</strong>. Do not guess. The plan was written against a specific state of the codebase; drift is possible.</div>
+        </div>
+      </section>
+
+      <!-- ============ QUALITY BAR ============ -->
+      <section class="plan-section" id="quality">
+        <div class="plan-section-head">
+          <span class="num">A2</span>
+          <h2>Quality bar</h2>
+        </div>
+        <p class="plan-prose">A task is "done" only when all of the following are true:</p>
+        <ul class="plan-prose">
+          <li>Every acceptance criterion in the task card is satisfied.</li>
+          <li><code>npx tsc --noEmit</code> passes (no TypeScript errors).</li>
+          <li><code>npm run lint</code> passes (no ESLint errors).</li>
+          <li>The dev server (<code>npm run dev</code>) starts without errors and the affected pages render without console errors.</li>
+          <li>The feature works end-to-end in dev — for form changes, submit a real test entry; for admin changes, sign in and verify the change is visible.</li>
+          <li>No console.log calls left in production code paths (server-side <code>console.error</code> for caught exceptions is fine).</li>
+          <li>No secrets committed (check <code>git diff</code> before commit).</li>
+          <li>The commit message starts with the task ID.</li>
+        </ul>
+      </section>
+
+      <!-- ============ TECH STACK ============ -->
+      <section class="plan-section" id="stack">
+        <div class="plan-section-head">
+          <span class="num">B1</span>
+          <h2>Tech stack (real, current)</h2>
+          <span class="meta">verified against package.json</span>
+        </div>
+        <table class="spec-table">
+          <thead><tr><th>layer</th><th>choice</th><th>version</th></tr></thead>
+          <tbody>
+            <tr><td class="name">framework</td><td>Next.js 14 (App Router, TypeScript)</td><td>14.2.3</td></tr>
+            <tr><td class="name">react</td><td>React</td><td>18.x</td></tr>
+            <tr><td class="name">database</td><td>Firebase Firestore</td><td>10.12.0</td></tr>
+            <tr><td class="name">admin SDK</td><td>firebase-admin</td><td>12.2.0</td></tr>
+            <tr><td class="name">auth</td><td>Firebase Auth (Google only)</td><td>via firebase SDK</td></tr>
+            <tr><td class="name">email</td><td>Nodemailer + Gmail App Password</td><td>6.9.13</td></tr>
+            <tr><td class="name">fonts</td><td>Inter / Space Grotesk / JetBrains Mono</td><td>via next/font/google</td></tr>
+            <tr><td class="name">deploy target</td><td>Firebase App Hosting</td><td>—</td></tr>
+            <tr><td class="name">styling</td><td>plain CSS in app/globals.css</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <div class="callout locked">
+          <span class="icon">!</span>
+          <div class="body"><strong>Not used in v1:</strong> Firebase Storage (reserved for v3 voice), Firebase Functions (App Hosting handles the API routes natively), Gemini API (v3 only), Tailwind (never), any UI library.</div>
+        </div>
+      </section>
+
+      <!-- ============ DATA MODEL ============ -->
+      <section class="plan-section" id="schema">
+        <div class="plan-section-head">
+          <span class="num">B2</span>
+          <h2>Data model (Firestore)</h2>
+          <span class="meta">defined in lib/types.ts + written by /api/submit</span>
+        </div>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">suggestions/{auto-id}</h3>
+        <div class="code"><span class="k">{</span>
+  <span class="t">timestamp</span>: <span class="t">Timestamp</span>,           <span class="c">// FieldValue.serverTimestamp() on create</span>
+  <span class="t">category</span>: <span class="s">"Live stream"</span>,        <span class="c">// one of CATEGORY_OPTIONS (8)</span>
+  <span class="t">type</span>: <span class="s">"New idea"</span>,               <span class="c">// one of TYPE_OPTIONS (8)</span>
+  <span class="t">suggestion</span>: <span class="s">"…"</span>,                <span class="c">// required, freeform text</span>
+  <span class="t">why</span>: <span class="s">"…"</span>,                       <span class="c">// required, freeform text</span>
+  <span class="t">username</span>: <span class="s">"discord_user"</span>,        <span class="c">// optional</span>
+  <span class="t">extra</span>: <span class="s">"…"</span>,                     <span class="c">// optional</span>
+  <span class="t">source</span>: <span class="s">"Discord"</span>,               <span class="c">// one of SOURCE_OPTIONS (5)</span>
+  <span class="t">status</span>: <span class="s">"New"</span>,                   <span class="c">// New | Active | Done | Duplicate | Rejected</span>
+  <span class="t">internalNotes</span>: <span class="s">""</span>,               <span class="c">// admin-only private notes</span>
+  <span class="t">preview</span>: <span class="s">"first 120 chars…"</span>,     <span class="c">// derived in /api/submit via makePreview()</span>
+  <span class="t">title</span>: <span class="s">"first sentence ≤58 chars"</span> <span class="c">// derived in /api/submit via makeTitle()</span>
+<span class="k">}</span></div>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">activity_log/{auto-id}</h3>
+        <div class="code"><span class="k">{</span>
+  <span class="t">timestamp</span>: <span class="t">Timestamp</span>,
+  <span class="t">action</span>: <span class="s">"Decision saved"</span>,       <span class="c">// "Status edited" | "Note updated" | "Suggestion updated"</span>
+  <span class="t">actionSource</span>: <span class="s">"queue"</span>,           <span class="c">// "queue" | "browser"</span>
+  <span class="t">suggestionId</span>: <span class="s">"…"</span>,
+  <span class="t">oldStatus</span>: <span class="s">"New"</span>,
+  <span class="t">newStatus</span>: <span class="s">"Active"</span>,
+  <span class="t">oldNote</span>: <span class="s">""</span>,
+  <span class="t">newNote</span>: <span class="s">"…"</span>,
+  <span class="t">noteChanged</span>: <span class="k">true</span>,
+  <span class="t">category</span>: <span class="s">"…"</span>,                   <span class="c">// snapshot of suggestion at action time</span>
+  <span class="t">type</span>: <span class="s">"…"</span>,
+  <span class="t">source</span>: <span class="s">"…"</span>,
+  <span class="t">preview</span>: <span class="s">"…"</span>
+<span class="k">}</span></div>
+
+        <p class="plan-prose">Firestore schema is open — extra fields are accepted. Server-side validation in <code>/api/submit</code> enforces category/type/source against the canonical lists. Status starts as <code>"New"</code> server-side regardless of payload.</p>
+
+        <div class="callout open">
+          <span class="icon">?</span>
+          <div class="body"><strong>v1 schema additions coming:</strong> <code>moderationFlags</code> (string[]) and <code>moderationState</code> ("clean" | "flagged") in FU-02. <code>resolutionNote</code> (string) and <code>resolutionLink</code> (string) in FU-05. Both are nullable / optional — existing docs without these fields are valid.</div>
+        </div>
+      </section>
+
+      <!-- ============ CONFIG ============ -->
+      <section class="plan-section" id="config">
+        <div class="plan-section-head">
+          <span class="num">B3</span>
+          <h2>Canonical config (lib/config.ts)</h2>
+          <span class="meta">single source for all dropdowns + validation</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+          <div>
+            <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">STATUS_OPTIONS</h3>
+            <ul class="plan-prose" style="font-size:13px;">
+              <li><strong>New</strong> — untriaged, queue head</li>
+              <li><strong>Active</strong> — acknowledged, in motion</li>
+              <li><strong>Done</strong> — acted on</li>
+              <li><strong>Duplicate</strong> — covered by another item</li>
+              <li><strong>Rejected</strong> — not doing</li>
+            </ul>
+          </div>
+          <div>
+            <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">SOURCE_OPTIONS</h3>
+            <ul class="plan-prose" style="font-size:13px;">
+              <li>Stream chat</li>
+              <li>Twitch profile / About page</li>
+              <li>YouTube stream page / description</li>
+              <li>YouTube video description</li>
+              <li>Discord</li>
+            </ul>
+          </div>
+          <div>
+            <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">CATEGORY_OPTIONS</h3>
+            <ul class="plan-prose" style="font-size:13px;">
+              <li>Live stream</li>
+              <li>Video / Shorts</li>
+              <li>Discord</li>
+              <li>Emotes / graphics</li>
+              <li>Coaching / Sweat Lab</li>
+              <li>Events / community games</li>
+              <li>Website / links / resources</li>
+              <li>Other</li>
+            </ul>
+          </div>
+          <div>
+            <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">TYPE_OPTIONS</h3>
+            <ul class="plan-prose" style="font-size:13px;">
+              <li>New idea</li>
+              <li>Improvement</li>
+              <li>Problem / bug</li>
+              <li>Rules / moderation</li>
+              <li>Content idea</li>
+              <li>Community request</li>
+              <li>Question</li>
+              <li>Other</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="plan-prose"><strong>ADMIN_EMAILS</strong> (in <code>lib/config.ts</code>): <code>nathancwatkins23@gmail.com</code>, <code>nastyn8plays@gmail.com</code>. Mirror this list in <code>firestore.rules</code> for server-side enforcement. To add an admin: edit both files + redeploy rules.</p>
+      </section>
+
+      <!-- ============ SURFACES ============ -->
+      <section class="plan-section" id="surfaces">
+        <div class="plan-section-head">
+          <span class="num">B4</span>
+          <h2>Existing surfaces</h2>
+        </div>
+        <table class="spec-table">
+          <thead><tr><th>route</th><th>file</th><th>what it does</th></tr></thead>
+          <tbody>
+            <tr><td class="name">/</td><td>app/page.tsx</td><td>Public 6-field form. Pre-fills source from <code>?source=</code> URL param. POSTs to <code>/api/submit</code>.</td></tr>
+            <tr><td class="name">/success</td><td>app/success/page.tsx</td><td>Thank-you confirmation page.</td></tr>
+            <tr><td class="name">/admin</td><td>app/admin/page.tsx</td><td>Auth gate (Google sign-in, allow-list). Three tabs via <code>?view=</code>: Review Queue, All Suggestions, Activity Log.</td></tr>
+            <tr><td class="name">/api/submit</td><td>app/api/submit/route.ts</td><td>POST handler. Validates payload, writes Firestore doc with <code>status: "New"</code>, fires Gmail notification.</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin: 18px 0 10px;color:var(--text);">Admin components</h3>
+        <table class="spec-table">
+          <thead><tr><th>component</th><th>file</th><th>does</th></tr></thead>
+          <tbody>
+            <tr><td class="name">ReviewQueue</td><td>components/admin/ReviewQueue.tsx</td><td>Two-pane triage: current "New" suggestion + related list (left), decision + notes (right). Subscribes via Firestore <code>onSnapshot</code>. Auto-advances on save.</td></tr>
+            <tr><td class="name">SuggestionBrowser</td><td>components/admin/SuggestionBrowser.tsx</td><td>Filterable list + detail. View groups: all / new / active / resolved. Filters: category, type, source, status, search.</td></tr>
+            <tr><td class="name">SuggestionDetail</td><td>components/admin/SuggestionDetail.tsx</td><td>Renders one suggestion (suggestion + why + meta).</td></tr>
+            <tr><td class="name">ActivityLog</td><td>components/admin/ActivityLog.tsx</td><td>Append-only log, grouped year → month → day. Filters by interaction, result, notes-only, decisions-only, search.</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin: 18px 0 10px;color:var(--text);">Helper modules</h3>
+        <table class="spec-table">
+          <thead><tr><th>file</th><th>exports</th></tr></thead>
+          <tbody>
+            <tr><td class="name">lib/config.ts</td><td>ADMIN_EMAILS, NOTIFY_EMAIL, CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, STATUS_OPTIONS + types</td></tr>
+            <tr><td class="name">lib/types.ts</td><td>SuggestionDoc, Suggestion, ActivityLogDoc, ActivityLogEntry, SaveReviewPayload, SubmitPayload</td></tr>
+            <tr><td class="name">lib/firebase.ts</td><td>auth, db, googleProvider (client SDK init)</td></tr>
+            <tr><td class="name">lib/firebase-admin.ts</td><td>adminDb (server SDK for /api routes)</td></tr>
+            <tr><td class="name">lib/firestore.ts</td><td>subscribeNextNew, fetchSuggestions, fetchSuggestion, fetchRelated, saveReview, fetchStats, fetchActivityLog + BrowseFilters/LogFilters/Stats types</td></tr>
+            <tr><td class="name">lib/utils.ts</td><td>makeTitle, makePreview, normalizeStatus, isNew/isActive/isResolved, statusClass, sourcePillClass, getKeywordSet, formatTimestamp</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ============ VISUAL DIRECTION ============ -->
+      <section class="plan-section" id="visual">
+        <div class="plan-section-head">
+          <span class="num">B5</span>
+          <h2>Visual direction</h2>
+        </div>
+        <p class="plan-prose">v1 keeps the existing dark-green theme from <code>app/globals.css</code> but pushes selected elements toward the more brand-forward "soft monster" look from the design mockups. Fonts already migrated to Inter / Space Grotesk / JetBrains Mono (see FU-10 done).</p>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">Palette (current)</h3>
+        <table class="spec-table">
+          <thead><tr><th>token</th><th>value</th><th>used for</th></tr></thead>
+          <tbody>
+            <tr><td class="name">--bg</td><td><code>#0a0f0a</code></td><td>page background</td></tr>
+            <tr><td class="name">--panel</td><td><code>#111911</code></td><td>cards</td></tr>
+            <tr><td class="name">--panel-2</td><td><code>#0d140d</code></td><td>nested panels, inputs</td></tr>
+            <tr><td class="name">--border</td><td><code>#2a3f2a</code></td><td>default borders</td></tr>
+            <tr><td class="name">--border-hot</td><td><code>#4ade80</code></td><td>focus rings</td></tr>
+            <tr><td class="name">--green</td><td><code>#4ade80</code></td><td>primary accent</td></tr>
+            <tr><td class="name">--amber</td><td><code>#fbbf24</code></td><td>Active status, warnings</td></tr>
+            <tr><td class="name">--blue</td><td><code>#60a5fa</code></td><td>Done status</td></tr>
+            <tr><td class="name">--red</td><td><code>#f87171</code></td><td>Rejected, errors</td></tr>
+            <tr><td class="name">--discord</td><td><code>#818cf8</code></td><td>Discord brand</td></tr>
+          </tbody>
+        </table>
+
+        <p class="plan-prose">DP-02 will add a <code>--purple</code> accent for non-status emphasis and may tune <code>--green</code> slightly more vibrant. Don't change palette tokens outside DP-02.</p>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin: 18px 0 10px;color:var(--text);">Fonts</h3>
+        <ul class="plan-prose">
+          <li><code>var(--font-body)</code> — Inter — body, paragraphs, form fields</li>
+          <li><code>var(--font-display)</code> — Space Grotesk — h1, h2, .form-title, .year-summary, .month-title, brand wordmarks</li>
+          <li><code>var(--font-mono)</code> — JetBrains Mono — small caps labels, metadata, code, timestamps</li>
+        </ul>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin: 18px 0 10px;color:var(--text);">Components from mockups that inform v1</h3>
+        <ul class="plan-prose">
+          <li><strong>Brand mark</strong> — gradient square (neon→purple, 135°) + wordmark. See <a href="index.html">design-mockups/index.html</a> <code>.brand</code> + <code>.brand-mark</code> for the reference.</li>
+          <li><strong>Caught-up hero</strong> — see <a href="empty.html">design-mockups/empty.html</a> scene 01. Big checkmark, headline, next-action cards.</li>
+          <li><strong>Source chip</strong> — see <a href="cards.html">design-mockups/cards.html</a> <code>.source-chip</code>. Small chip with platform-colored dot + mono label.</li>
+          <li><strong>Status pill</strong> — existing pills are close; DP-08 adds subtle glow on the colored dot.</li>
+        </ul>
+      </section>
+
+      <!-- ===================================================
+           v1 DESIGN POLISH TASKS
+           =================================================== -->
+
+      <!-- ============ DP-01 ============ -->
+      <article class="task" id="DP-01">
+        <header class="task-header">
+          <span class="task-id">DP-01</span>
+          <span class="task-title">Brand mark in admin nav</span>
+          <span class="tags">
+            <span class="tiny-tag dp">design polish</span>
+            <span class="tiny-tag high">high</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Add a Nasty N8 brand mark (gradient square + wordmark) at the top-left of the admin so the page reads as branded immediately, not as a generic dashboard.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>components/Brand.tsx</td><td>NEW. Renders the mark + wordmark. Accept optional <code>subtitle</code> prop.</td></tr>
+            <tr><td>app/admin/page.tsx</td><td>Replace the existing <code>&lt;h1&gt;Suggestion Review&lt;/h1&gt; + .subtitle</code> block in the topbar with <code>&lt;Brand subtitle="Suggestion Review" /&gt;</code>.</td></tr>
+            <tr><td>app/globals.css</td><td>Add <code>.brand</code>, <code>.brand-mark</code>, <code>.brand-name</code>, <code>.brand-subtitle</code> classes.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>The brand component is a small flex row: a 32×32px square with a 135° linear-gradient from neon green (<code>#4ade80</code>) to acid purple (<code>#a855f7</code>) and a soft outer glow, plus a wordmark stack ("Nasty N8" in Space Grotesk weight 700, optional subtitle below in muted text).</p>
+          <p>Use this structure for <code>components/Brand.tsx</code>:</p>
+          <div class="code"><span class="k">export function</span> <span class="f">Brand</span>(<span class="k">{</span> subtitle <span class="k">}: {</span> subtitle?: <span class="t">string</span> <span class="k">}</span>) {
+  <span class="k">return</span> (
+    &lt;<span class="t">div</span> className=<span class="s">"brand"</span>&gt;
+      &lt;<span class="t">div</span> className=<span class="s">"brand-mark"</span> /&gt;
+      &lt;<span class="t">div</span>&gt;
+        &lt;<span class="t">div</span> className=<span class="s">"brand-name"</span>&gt;Nasty N8&lt;/<span class="t">div</span>&gt;
+        {subtitle <span class="k">&amp;&amp;</span> &lt;<span class="t">div</span> className=<span class="s">"brand-subtitle"</span>&gt;{subtitle}&lt;/<span class="t">div</span>&gt;}
+      &lt;/<span class="t">div</span>&gt;
+    &lt;/<span class="t">div</span>&gt;
+  )
+}</div>
+
+          <p>CSS in <code>globals.css</code>:</p>
+          <div class="code">.brand <span class="k">{</span> display: flex; align-items: center; gap: <span class="s">12px</span>; <span class="k">}</span>
+.brand-mark <span class="k">{</span>
+  width: <span class="s">32px</span>; height: <span class="s">32px</span>; border-radius: <span class="s">8px</span>;
+  background: linear-gradient(<span class="s">135deg</span>, <span class="s">#4ade80</span> 0%, <span class="s">#a855f7</span> 100%);
+  box-shadow: <span class="s">0 0 16px</span> rgba(74, 222, 128, 0.35);
+  flex-shrink: 0;
+<span class="k">}</span>
+.brand-name <span class="k">{</span>
+  font-family: <span class="k">var</span>(--font-display);
+  font-size: <span class="s">16px</span>; font-weight: <span class="s">700</span>;
+  letter-spacing: <span class="s">-0.015em</span>;
+  color: <span class="k">var</span>(--text);
+  line-height: <span class="s">1.1</span>;
+<span class="k">}</span>
+.brand-subtitle <span class="k">{</span>
+  font-family: <span class="k">var</span>(--font-mono);
+  font-size: <span class="s">10px</span>; color: <span class="k">var</span>(--muted);
+  text-transform: uppercase; letter-spacing: <span class="s">.12em</span>;
+  margin-top: <span class="s">2px</span>;
+<span class="k">}</span></div>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>Brand mark visible at top-left of <code>/admin</code></li>
+            <li>Gradient square renders neon-green → purple at 135°</li>
+            <li>"Nasty N8" wordmark uses Space Grotesk weight 700</li>
+            <li>Subtitle "Suggestion Review" renders below in mono uppercase</li>
+            <li>Sign-out button still functions on the right of the topbar</li>
+            <li>On mobile (≤700px) the brand stacks above the user-info row without overflow</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Do <strong>not</strong> add the brand mark to the public form page (<code>/</code>) in this task — that's DP-07 and the form should stay minimal.</li>
+            <li>Don't replace the auth-card "Nasty N8" h1 in the signed-out state — leave the existing sign-in screen alone.</li>
+            <li>The gradient values (<code>#4ade80</code> → <code>#a855f7</code>) are placeholders until DP-02 finalizes the purple. Hardcode them here; DP-02 will refactor to tokens if needed.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ DP-02 ============ -->
+      <article class="task" id="DP-02">
+        <header class="task-header">
+          <span class="task-id">DP-02</span>
+          <span class="task-title">Palette tune: add purple accent + slight green push</span>
+          <span class="tags">
+            <span class="tiny-tag dp">design polish</span>
+            <span class="tiny-tag med">medium</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Add a <code>--purple</code> token to the palette for non-status emphasis (brand gradient end-stop, future accents) and slightly punch the green so it reads more brand-forward without breaking readability.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>app/globals.css</td><td>Add <code>--purple</code> and <code>--purple-bg</code> tokens. Optionally tune <code>--green</code>.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>Add these tokens to <code>:root</code> in <code>app/globals.css</code> (right after the existing <code>--discord</code> tokens):</p>
+          <div class="code">--purple:      <span class="s">#a855f7</span>;
+--purple-bg:   <span class="s">#1e1233</span>;
+--purple-dim:  <span class="s">#6b21a8</span>;</div>
+          <p>Keep <code>--green</code> at <code>#4ade80</code> for now (it's already a good readable value). Do not change <code>--green-bg</code>, <code>--green-dim</code>, <code>--border-hot</code>, or the existing status colors. The point of this task is just to <strong>introduce</strong> the purple, not redesign.</p>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>Three new tokens (<code>--purple</code>, <code>--purple-bg</code>, <code>--purple-dim</code>) defined in <code>:root</code></li>
+            <li>No existing token values modified</li>
+            <li>The app renders identically to before this task (nothing uses purple yet)</li>
+            <li><code>npm run lint</code> + <code>npx tsc --noEmit</code> pass</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>This task <strong>introduces</strong> tokens; it does not change any visual output. The brand mark in DP-01 hardcodes the purple — fine. Future tasks (and DP-08) will use the token instead of the hex.</li>
+            <li>Don't add purple to any status pill. Statuses already have meanings; purple is for brand/non-status emphasis only.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ DP-03 ============ -->
+      <article class="task" id="DP-03">
+        <header class="task-header">
+          <span class="task-id">DP-03</span>
+          <span class="task-title">"Caught up" hero state in Review Queue</span>
+          <span class="tags">
+            <span class="tiny-tag dp">design polish</span>
+            <span class="tiny-tag high">high</span>
+            <span class="tiny-tag m">medium</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Replace the one-line "No new suggestions — queue is clear! 🎉" empty state in <code>ReviewQueue</code> with a proper hero — big check, headline, helpful next actions. Confirms you finished the work and points to other useful things to do.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>components/admin/ReviewQueue.tsx</td><td>Replace the single <code>&lt;div className="empty-state"&gt;</code> in the "Current suggestion" card when <code>current === null</code> with a new <code>&lt;CaughtUp /&gt;</code> render.</td></tr>
+            <tr><td>components/admin/CaughtUp.tsx</td><td>NEW. The hero component.</td></tr>
+            <tr><td>app/globals.css</td><td>Add <code>.caught-up</code>, <code>.caught-up-check</code>, <code>.caught-up-h1</code>, <code>.caught-up-p</code>, <code>.next-actions</code>, <code>.next-action-card</code> classes.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>The reference is <a href="empty.html#scene-1">design-mockups/empty.html scene 01</a> but simplified — no animated blobs, no "first login" framing. Just a celebration of an empty queue.</p>
+          <p>Layout (vertically centered in the existing card):</p>
+          <ol>
+            <li>Large circle (88×88px) with neon→purple gradient, white check glyph centered, soft outer glow.</li>
+            <li>Headline (Space Grotesk, 28px, weight 700): "You're all caught up."</li>
+            <li>One sentence below (Inter, 14px, muted): "Nothing new to review right now. New suggestions land here as they come in."</li>
+            <li>Three "next action" cards in a row (or stacked on mobile): "Browse all suggestions" → links to <code>/admin?view=browse</code>, "View activity log" → links to <code>/admin?view=log</code>, "Open the public form" → links to <code>/</code> (opens in new tab).</li>
+          </ol>
+
+          <p>Component skeleton:</p>
+          <div class="code"><span class="k">import</span> Link <span class="k">from</span> <span class="s">'next/link'</span>
+
+<span class="k">export default function</span> <span class="f">CaughtUp</span>() {
+  <span class="k">return</span> (
+    &lt;<span class="t">div</span> className=<span class="s">"caught-up"</span>&gt;
+      &lt;<span class="t">div</span> className=<span class="s">"caught-up-check"</span>&gt;✓&lt;/<span class="t">div</span>&gt;
+      &lt;<span class="t">h2</span> className=<span class="s">"caught-up-h1"</span>&gt;You're all caught up.&lt;/<span class="t">h2</span>&gt;
+      &lt;<span class="t">p</span> className=<span class="s">"caught-up-p"</span>&gt;Nothing new to review right now…&lt;/<span class="t">p</span>&gt;
+      &lt;<span class="t">div</span> className=<span class="s">"next-actions"</span>&gt;
+        &lt;<span class="t">Link</span> href=<span class="s">"/admin?view=browse"</span> className=<span class="s">"next-action-card"</span>&gt;…&lt;/<span class="t">Link</span>&gt;
+        …
+      &lt;/<span class="t">div</span>&gt;
+    &lt;/<span class="t">div</span>&gt;
+  )
+}</div>
+
+          <p>CSS specifics:</p>
+          <ul>
+            <li><code>.caught-up</code> — text-align: center, padding: 56px 32px, display: flex column, gap: 16px, align-items: center</li>
+            <li><code>.caught-up-check</code> — 88×88 circle, gradient <code>linear-gradient(135deg, var(--green) 0%, var(--purple) 100%)</code>, font-size 36px, color #062b14, box-shadow <code>0 0 32px rgba(74, 222, 128, 0.35)</code></li>
+            <li><code>.next-actions</code> — display flex, gap: 10px, flex-wrap: wrap, justify-content: center, margin-top: 16px</li>
+            <li><code>.next-action-card</code> — padding 10px 16px, background var(--panel-2), border 1px solid var(--border), border-radius 8px, font-size 13px, color var(--muted). Hover: border-color var(--green), color var(--green).</li>
+          </ul>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>When Review Queue has no "New" suggestions, the new hero renders instead of the old one-liner</li>
+            <li>Headline "You're all caught up." uses Space Grotesk, 28px, weight 700</li>
+            <li>Three next-action cards render and link to the right routes</li>
+            <li>Hover state on each card highlights border + text in green</li>
+            <li>When a new "New" suggestion appears (test by submitting via <code>/</code>), the hero is replaced by the suggestion within ~1s (already handled by existing <code>onSnapshot</code> subscription)</li>
+            <li>Mobile (≤700px): next-action cards stack, hero stays centered</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Don't replace the entire card chrome — only the inner content when current is null. The "Review Queue" title bar above the card stays.</li>
+            <li>The decision panel on the right side of the layout should also handle the null state — when there's no current suggestion, the decision buttons should disable (they already do via <code>disabled={!current}</code>). Don't change that behavior.</li>
+            <li>Use <code>next/link</code>, not <code>&lt;a href&gt;</code>, for the internal route navigation. Use a regular <code>&lt;a target="_blank"&gt;</code> for the "open public form" link.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ DP-04 ============ -->
+      <article class="task" id="DP-04">
+        <header class="task-header">
+          <span class="task-id">DP-04</span>
+          <span class="task-title">Filter-no-results empty state in Suggestion Browser</span>
+          <span class="tags">
+            <span class="tiny-tag dp">design polish</span>
+            <span class="tiny-tag med">medium</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> When the Suggestion Browser has filters applied and returns zero results, show a helpful empty state with a "Clear all filters" action — not just empty space.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>components/admin/SuggestionBrowser.tsx</td><td>Detect the zero-results state, render a new <code>&lt;NoResults /&gt;</code> when filters are applied. When no filters and zero results, render the existing "no suggestions yet" message.</td></tr>
+            <tr><td>app/globals.css</td><td>Add <code>.no-results</code>, <code>.no-results-icon</code>, <code>.no-results-actions</code> classes if not reusing existing.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>The empty state should:</p>
+          <ul>
+            <li>Show a soft icon (a dashed circle with a "?" inside; pure CSS, no external icon library)</li>
+            <li>Headline: "Nothing matched."</li>
+            <li>Summary of the current filters: "Filters: status=Active, source=Discord, search='cooking'"</li>
+            <li>One primary action: "Clear all filters" — resets viewGroup to 'all', source/status/search/category/type to empty strings</li>
+            <li>Optional secondary suggestions if applicable: "Remove the 'Active' filter (12 matches)" — only show if calculable without an extra fetch; if not, skip</li>
+          </ul>
+
+          <p>Detect "filters applied" as: <code>viewGroup !== 'all' || category || type || source || status || search</code>.</p>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>When filters yield zero results, the new empty state renders</li>
+            <li>The summary text lists the current non-default filter values (clear and human-readable)</li>
+            <li>"Clear all filters" button resets all filters to defaults and re-fetches</li>
+            <li>When no filters applied (clean state) and zero results, the existing "no suggestions yet" message still renders (don't break the empty-empty case)</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Don't make a network request just to compute "remove this filter (N matches)" hint. If it's free from existing stats, fine; otherwise omit.</li>
+            <li>Keep the empty state in-grid (inside the existing card) — don't move it outside the surrounding layout.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ DP-05 ============ -->
+      <article class="task" id="DP-05">
+        <header class="task-header">
+          <span class="task-id">DP-05</span>
+          <span class="task-title">Filter-no-results empty state in Activity Log</span>
+          <span class="tags">
+            <span class="tiny-tag dp">design polish</span>
+            <span class="tiny-tag low">low</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Same as DP-04 but for Activity Log filters. When filters yield zero entries, show a helpful empty state with "Clear filters" action.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>components/admin/ActivityLog.tsx</td><td>Detect zero-results when filters applied; render no-results state.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>Reuse the <code>.no-results</code> classes from DP-04 (or extract to a shared component if both pages benefit). Summary should list active log filters: <code>year</code>, <code>monthKey</code>, <code>interaction</code>, <code>result</code>, <code>search</code>, <code>onlyWithNotes</code>, <code>onlyDecisions</code>.</p>
+          <p>Primary action: "Clear all filters" — resets all <code>LogFilters</code> to empty/false defaults, keeps <code>sortDirection</code>.</p>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>When log filters yield zero entries, new empty state renders</li>
+            <li>Summary text lists active filter values</li>
+            <li>"Clear all filters" resets filter state and re-fetches</li>
+            <li>Clean log (no filters, no entries) still shows existing "no activity yet" message</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ DP-06 ============ -->
+      <article class="task" id="DP-06">
+        <header class="task-header">
+          <span class="task-id">DP-06</span>
+          <span class="task-title">Source-aware greeting on public form</span>
+          <span class="tags">
+            <span class="tiny-tag dp">design polish</span>
+            <span class="tiny-tag med">medium</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> When the form URL contains a valid <code>?source=</code> param, show a small "Responding from {source}" line above the form so the visitor knows the link knew where they came from.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>app/page.tsx</td><td>Add the greeting line above the <code>&lt;h1 className="form-title"&gt;</code>.</td></tr>
+            <tr><td>app/globals.css</td><td>Add <code>.form-source-tag</code> class.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>The component already has <code>validSource</code> computed at the top of <code>SuggestionFormPage</code>. Use it directly:</p>
+          <div class="code">{validSource <span class="k">&amp;&amp;</span> (
+  &lt;<span class="t">div</span> className=<span class="s">"form-source-tag"</span>&gt;
+    Responding from &lt;<span class="t">strong</span>&gt;{validSource}&lt;/<span class="t">strong</span>&gt;
+  &lt;/<span class="t">div</span>&gt;
+)}</div>
+
+          <p>CSS:</p>
+          <div class="code">.form-source-tag <span class="k">{</span>
+  font-family: <span class="k">var</span>(--font-mono);
+  font-size: <span class="s">11px</span>; text-transform: uppercase;
+  letter-spacing: <span class="s">.12em</span>; color: <span class="k">var</span>(--muted);
+  display: inline-block;
+  padding: <span class="s">5px 10px</span>; border-radius: <span class="s">999px</span>;
+  border: <span class="s">1px solid</span> <span class="k">var</span>(--green-dim);
+  background: <span class="k">var</span>(--green-bg);
+  color: <span class="k">var</span>(--green);
+  margin-bottom: <span class="s">14px</span>;
+<span class="k">}</span>
+.form-source-tag <span class="t">strong</span> <span class="k">{</span> color: <span class="k">var</span>(--green); font-weight: <span class="s">700</span>; <span class="k">}</span></div>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>Visit <code>/?source=Discord</code> — the tag renders above the form title showing "Responding from <strong>Discord</strong>"</li>
+            <li>Visit <code>/?source=YouTube+video+description</code> — tag shows the YouTube source label (URL-decoded)</li>
+            <li>Visit <code>/?source=garbage</code> — no tag renders (invalid source)</li>
+            <li>Visit <code>/</code> with no source param — no tag renders</li>
+            <li>Tag styling matches: mono font, neon green text + border, pill shape</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Don't double-decode <code>validSource</code> — it's already <code>decodeURIComponent()</code>'d in the existing code.</li>
+            <li>Don't add this to <code>/success</code> — only to the form page.</li>
+            <li>The existing <code>.form-hint</code> note ("Auto-filled from the link you used…") below the source select should remain.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ DP-07 ============ -->
+      <article class="task" id="DP-07">
+        <header class="task-header">
+          <span class="task-id">DP-07</span>
+          <span class="task-title">Subtle brand polish on public form (header treatment)</span>
+          <span class="tags">
+            <span class="tiny-tag dp">design polish</span>
+            <span class="tiny-tag low">low</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Add a small brand mark (without wordmark, just the gradient square) above the form title — signals personality without compromising the no-distraction submit flow.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>app/page.tsx</td><td>Add <code>&lt;div className="brand-mark form-brand-mark" /&gt;</code> above the form title (and above the DP-06 source tag).</td></tr>
+            <tr><td>app/globals.css</td><td>Add <code>.form-brand-mark</code> class that scales the existing <code>.brand-mark</code> appropriately for the form page.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>The form is intentionally minimal — don't add a full wordmark, just the gradient square as a small accent. 40×40px, centered above the title, slight margin below.</p>
+          <div class="code">.form-brand-mark <span class="k">{</span>
+  width: <span class="s">40px</span>; height: <span class="s">40px</span>;
+  border-radius: <span class="s">10px</span>;
+  margin: <span class="s">0 auto 16px</span>;
+  display: block;
+<span class="k">}</span></div>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>Gradient square renders above the form title on <code>/</code></li>
+            <li>Square is 40×40, centered, with the same neon→purple gradient as the admin brand mark</li>
+            <li>No wordmark added to the form page (intentional)</li>
+            <li>Form still scrolls / submits / validates correctly</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Depends on DP-01 (the <code>.brand-mark</code> class must exist).</li>
+            <li>If user provides a real logo asset later, this gets replaced with an <code>&lt;img&gt;</code> — for now it's the gradient placeholder.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ DP-08 ============ -->
+      <article class="task" id="DP-08">
+        <header class="task-header">
+          <span class="task-id">DP-08</span>
+          <span class="task-title">Status pill polish — colored dot with subtle glow</span>
+          <span class="tags">
+            <span class="tiny-tag dp">design polish</span>
+            <span class="tiny-tag low">low</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Add a small colored dot inside the existing status pills with a subtle glow — gives them more visual depth without a structural change.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>app/globals.css</td><td>Update <code>.pill.new</code>, <code>.pill.active</code>, etc. to include a <code>::before</code> dot with box-shadow glow matching the pill color.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>Reference: <code>design-mockups/styles.css</code> — the <code>.status-pill::before</code> rule. Each status pill should render a small (6×6) colored circle before its text with a soft glow shadow matching the color.</p>
+          <div class="code">.pill::before <span class="k">{</span>
+  content: <span class="s">''</span>;
+  display: inline-block;
+  width: <span class="s">6px</span>; height: <span class="s">6px</span>;
+  border-radius: <span class="s">50%</span>;
+  background: currentColor;
+  box-shadow: <span class="s">0 0 6px</span> currentColor;
+  margin-right: <span class="s">2px</span>;
+<span class="k">}</span>
+<span class="c">/* No dot on source pills, only status pills */</span>
+.pill.discord::before,
+.pill.youtube::before,
+.pill.twitch::before,
+.pill.source::before,
+.pill.type::before,
+.pill.note::before <span class="k">{</span> display: none; <span class="k">}</span></div>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>Status pills (.new, .active, .done, .duplicate, .rejected) show a small glowing dot before their text</li>
+            <li>Source pills (.discord, .youtube, .twitch, .source) do NOT show the dot</li>
+            <li>Type pills, note pills do NOT show the dot</li>
+            <li>Pill widths remain readable; existing <code>min-height</code> and <code>max-width</code> still apply</li>
+            <li>Existing <code>.sdot</code> usage in <code>SuggestionCard</code> is unaffected (it's used in a different context — the suggestion-item-meta row)</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Don't use a separate <code>&lt;span&gt;</code> — use the <code>::before</code> pseudo so we don't have to touch all the JSX.</li>
+            <li>The <code>.cur-badge</code> already has color/border — make sure the dot still renders inside it.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ DP-09 ============ -->
+      <article class="task" id="DP-09">
+        <header class="task-header">
+          <span class="task-id">DP-09</span>
+          <span class="task-title">Source chip styling consistency</span>
+          <span class="tags">
+            <span class="tiny-tag dp">design polish</span>
+            <span class="tiny-tag low">low</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> The <code>sourcePillClass()</code> in <code>lib/utils.ts</code> maps source strings to CSS classes (<code>.pill.discord</code>, <code>.pill.youtube</code>, etc.). Verify all 5 SOURCE_OPTIONS map to a class that has color styling, and add fallbacks for any that miss.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>lib/utils.ts</td><td>Verify <code>sourcePillClass</code> covers all 5 sources. The current implementation checks for substring matches; confirm coverage:</td></tr>
+            <tr><td>app/globals.css</td><td>Add styles for any source class not yet styled.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>Walk through each SOURCE_OPTIONS value and trace what class <code>sourcePillClass()</code> returns:</p>
+          <ul>
+            <li><strong>"Stream chat"</strong> → contains "stream" → returns <code>'pill source'</code> ✓ (styled)</li>
+            <li><strong>"Twitch profile / About page"</strong> → contains "twitch" → returns <code>'pill twitch'</code> ✓ (styled)</li>
+            <li><strong>"YouTube stream page / description"</strong> → contains "youtube" → returns <code>'pill youtube'</code> ✓ (styled, but note: it also contains "stream"; "youtube" check runs first → ok)</li>
+            <li><strong>"YouTube video description"</strong> → contains "youtube" → returns <code>'pill youtube'</code> ✓</li>
+            <li><strong>"Discord"</strong> → contains "discord" → returns <code>'pill discord'</code> ✓</li>
+          </ul>
+          <p>All 5 are covered. Verify in browser by manually entering test data under each source and confirming the admin shows the correctly colored pill. If any pill renders as the default unstyled <code>.pill</code>, file as a bug and add a check.</p>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>All 5 SOURCE_OPTIONS render with a colored pill in admin (visually verified)</li>
+            <li>No code changes required if the verification passes (this is mostly a QA task)</li>
+            <li>If any source falls through to the default, add an explicit case in <code>sourcePillClass()</code></li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ===================================================
+           v1 FUNCTIONAL TASKS
+           =================================================== -->
+
+      <!-- ============ FU-01 ============ -->
+      <article class="task" id="FU-01">
+        <header class="task-header">
+          <span class="task-id">FU-01</span>
+          <span class="task-title">Profanity word list + regex check</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag high">high</span>
+            <span class="tiny-tag m">medium</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Build the moderation primitive — a curated word list + a function that returns matched terms for any given text. Used by FU-02 and FU-03 to flag risky submissions.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>lib/moderation.ts</td><td>NEW. Exports <code>PROFANITY_LIST</code> (string[]) and <code>checkProfanity(text: string): string[]</code>.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p><code>checkProfanity</code> takes a string, normalizes (lowercase, strip punctuation), splits into tokens, and returns any tokens that match the word list. Returns an empty array if clean.</p>
+          <div class="code"><span class="k">export const</span> PROFANITY_LIST: <span class="t">readonly string</span>[] = <span class="k">[</span>
+  <span class="c">// hard slurs, hate speech terms, harassment-flavored words</span>
+  <span class="c">// Mild profanity (damn, hell, shit) intentionally NOT included.</span>
+  <span class="c">// User will provide the final list — start with a curated open-source base.</span>
+<span class="k">]</span>
+
+<span class="k">export function</span> <span class="f">checkProfanity</span>(text: <span class="t">string</span>): <span class="t">string</span>[] {
+  <span class="k">if</span> (!text) <span class="k">return</span> []
+  <span class="k">const</span> normalized = text.toLowerCase().replace(<span class="s">/[^a-z0-9\s]/g</span>, <span class="s">' '</span>)
+  <span class="k">const</span> tokens = <span class="k">new</span> <span class="t">Set</span>(normalized.split(<span class="s">/\s+/</span>).filter(<span class="t">Boolean</span>))
+  <span class="k">return</span> PROFANITY_LIST.filter(w =&gt; tokens.has(w.toLowerCase()))
+}</div>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li><code>lib/moderation.ts</code> exists and exports both <code>PROFANITY_LIST</code> and <code>checkProfanity</code></li>
+            <li><code>checkProfanity("hello world")</code> returns <code>[]</code></li>
+            <li><code>checkProfanity("&lt;known-slur&gt; in the text")</code> returns <code>["&lt;known-slur&gt;"]</code> when the slur is in the list</li>
+            <li>List is sourced from a reasonable open-source base (e.g. LDNOOBW filtered down) — actual words are <strong>user-curated</strong></li>
+            <li>Mild profanity (damn, hell, shit, fuck used casually) does NOT trigger a match (per user direction)</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li><strong>STOP and ask the user</strong> for the final word list before committing. The list is sensitive and user-specific; don't ship a default that's either too loose or too strict.</li>
+            <li>Don't add an external profanity npm package — keep it as a static list to control exactly what's flagged.</li>
+            <li>This task only adds the primitive. FU-02 wires it into the submit pipeline; FU-03 adds the admin UI.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ FU-02 ============ -->
+      <article class="task" id="FU-02">
+        <header class="task-header">
+          <span class="task-id">FU-02</span>
+          <span class="task-title">Wire moderation into submit pipeline + extend schema</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag high">high</span>
+            <span class="tiny-tag m">medium</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Apply <code>checkProfanity()</code> in <code>/api/submit</code>, write <code>moderationState</code> and <code>moderationFlags</code> to the Firestore doc, and send the admin a separate "flagged content" email when a flag fires.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>app/api/submit/route.ts</td><td>Call <code>checkProfanity()</code> on suggestion + why + extra concatenated. Add <code>moderationFlags</code> and <code>moderationState</code> to the Firestore write. If flagged, also fire the flagged-content email.</td></tr>
+            <tr><td>lib/types.ts</td><td>Add <code>moderationFlags?: string[]</code> and <code>moderationState?: 'clean' | 'flagged'</code> to <code>SuggestionDoc</code> and <code>Suggestion</code>.</td></tr>
+            <tr><td>lib/firestore.ts</td><td>Update <code>docToSuggestion()</code> to pull the two new fields from the Firestore data.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>In <code>/api/submit</code> after validation, before the Firestore write:</p>
+          <div class="code"><span class="k">import</span> { checkProfanity } <span class="k">from</span> <span class="s">'@/lib/moderation'</span>
+
+<span class="k">const</span> flagged = checkProfanity(<span class="s">`${suggestion} ${why} ${extra}`</span>)
+<span class="k">const</span> moderationState = flagged.length &gt; 0 ? <span class="s">'flagged'</span> : <span class="s">'clean'</span>
+
+<span class="c">// in the Firestore .add() payload:</span>
+moderationFlags: flagged,
+moderationState,</div>
+
+          <p>For the flagged-content notification, add a new helper that's called only when <code>flagged.length &gt; 0</code>. The email subject should be distinct (e.g., <code>[FLAGGED] New Suggestion: …</code>) and the body should list the matched terms. Send it to the same NOTIFY_EMAIL_TO. Skip silently if email env vars not set.</p>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>Submit a clean suggestion via <code>/</code> — Firestore doc has <code>moderationState: "clean"</code>, <code>moderationFlags: []</code>, regular email fires</li>
+            <li>Submit a suggestion containing a known list term — Firestore doc has <code>moderationState: "flagged"</code>, <code>moderationFlags: ["term"]</code>, flagged email fires with the matched term in the body</li>
+            <li><code>SuggestionDoc</code> and <code>Suggestion</code> types include the two new optional fields</li>
+            <li><code>docToSuggestion()</code> populates them (with defaults of <code>"clean"</code> / <code>[]</code> when missing on legacy docs)</li>
+            <li>Existing suggestions without these fields still load correctly (no runtime errors)</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Don't block the submission on flagged content — still write the doc, still return 200. The admin reviews flagged items; nothing is auto-rejected.</li>
+            <li>Don't include the matched terms in the regular notification email — only in the flagged email. Keep the clean path clean.</li>
+            <li>FU-01 must be done first (this task imports from it).</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ FU-03 ============ -->
+      <article class="task" id="FU-03">
+        <header class="task-header">
+          <span class="task-id">FU-03</span>
+          <span class="task-title">Moderation UI in admin (badge + filter)</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag high">high</span>
+            <span class="tiny-tag m">medium</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Surface flagged suggestions visually in the admin: a "FLAGGED" pill on the suggestion card/detail, plus a filter to view only flagged items, plus a count in the topbar.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>components/admin/SuggestionDetail.tsx</td><td>When <code>item.moderationState === 'flagged'</code>, render a red <code>FLAGGED</code> pill near the top with matched terms listed below.</td></tr>
+            <tr><td>components/admin/ReviewQueue.tsx</td><td>If the current suggestion is flagged, render a moderation banner above the suggestion card (e.g., "⚠ Flagged: contains 'term1', 'term2'").</td></tr>
+            <tr><td>components/admin/SuggestionBrowser.tsx</td><td>Add a "Flagged only" small-button toggle in the filter area. When on, filter results client-side to <code>moderationState === 'flagged'</code>.</td></tr>
+            <tr><td>app/admin/page.tsx</td><td>In the topbar, optionally show a count: "3 flagged" — only if &gt; 0. Fetch with <code>fetchStats()</code> or a new helper.</td></tr>
+            <tr><td>lib/firestore.ts</td><td>If needed, add <code>flaggedCount</code> to the Stats interface and calc it in <code>calcStats</code>.</td></tr>
+            <tr><td>app/globals.css</td><td>Add <code>.pill.flagged</code> (red, glowing) and <code>.mod-banner</code> classes.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>Flagged pill style:</p>
+          <div class="code">.pill.flagged <span class="k">{</span>
+  color: <span class="k">var</span>(--red);
+  border-color: <span class="k">var</span>(--red-border);
+  background: <span class="k">var</span>(--red-bg);
+<span class="k">}</span>
+.pill.flagged::before <span class="k">{</span> <span class="c">/* inherits glow from DP-08 */</span> <span class="k">}</span></div>
+
+          <p>Moderation banner (in ReviewQueue) when current is flagged:</p>
+          <div class="code">.mod-banner <span class="k">{</span>
+  background: <span class="k">var</span>(--red-bg);
+  border: <span class="s">1px solid</span> <span class="k">var</span>(--red-border);
+  border-radius: <span class="s">10px</span>;
+  padding: <span class="s">10px 14px</span>;
+  font-size: <span class="s">13px</span>;
+  color: <span class="k">var</span>(--red);
+  margin-bottom: <span class="s">12px</span>;
+  display: flex; align-items: center; gap: <span class="s">8px</span>;
+<span class="k">}</span></div>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>A flagged suggestion shows a red "FLAGGED" pill in its detail view</li>
+            <li>Below the pill (or in a banner), the matched terms are listed</li>
+            <li>In Review Queue, when the current suggestion is flagged, a red banner appears above the detail</li>
+            <li>In Browser, a "Flagged only" filter toggle exists and works</li>
+            <li>Topbar shows "<strong>N</strong> flagged" only when N &gt; 0</li>
+            <li>Clean suggestions show none of the above (no banners, no flags pill)</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Depends on FU-02. Don't ship without FU-02 first or the <code>moderationState</code> field won't exist.</li>
+            <li>Listing matched terms in the UI exposes them to the admin only — never to the submitter or any public surface. The form should remain unchanged for v1 (no surface-level rejection or warning).</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ FU-04 ============ -->
+      <article class="task" id="FU-04">
+        <header class="task-header">
+          <span class="task-id">FU-04</span>
+          <span class="task-title">Rate limiting on /api/submit</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag high">high</span>
+            <span class="tiny-tag m">medium</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Cap how often a single IP can submit. Cheap insurance against spam waves. Reject with HTTP 429 when exceeded.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>app/api/submit/route.ts</td><td>Add a rate-limit check before validation. Read client IP from request headers (<code>x-forwarded-for</code> on Vercel).</td></tr>
+            <tr><td>lib/rate-limit.ts</td><td>NEW. Exports <code>checkRateLimit(ip: string): Promise&lt;{ ok: boolean; resetIn?: number }&gt;</code>. Implementation uses Firestore as the store (lasts across cold starts).</td></tr>
+            <tr><td>firestore.rules</td><td>Add a rule for <code>rate_limit/{ip}</code> — server-only (no client read/write).</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>Limits: <strong>3 submissions per IP per 60 seconds</strong>, <strong>30 per IP per hour</strong>. Reject with 429 (and a JSON body explaining the limit) when exceeded.</p>
+          <p>Firestore doc shape for <code>rate_limit/{ip-hash}</code>:</p>
+          <div class="code"><span class="k">{</span>
+  <span class="t">timestamps</span>: <span class="t">number</span>[],  <span class="c">// recent submission unix-ms, last 60 entries max</span>
+  <span class="t">updatedAt</span>: <span class="t">Timestamp</span>
+<span class="k">}</span></div>
+
+          <p>Algorithm:</p>
+          <ol>
+            <li>Hash the IP (e.g., SHA-1) to avoid storing raw IPs.</li>
+            <li>Read the doc. If missing, treat as empty.</li>
+            <li>Filter timestamps to those within last hour. Count.</li>
+            <li>Reject if count exceeds hourly limit, or if last-minute count exceeds minute limit.</li>
+            <li>Otherwise: append <code>Date.now()</code> to the array, write back (capped at 60 entries).</li>
+          </ol>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>Submit 4 suggestions from the same browser within 60s — the 4th gets HTTP 429 with a body like <code>{"error": "Too many submissions. Try again in N seconds."}</code></li>
+            <li>Submit at a steady cadence (one every 30s) — none are rate-limited</li>
+            <li>Firestore <code>rate_limit/{ip-hash}</code> doc is created/updated on each submission</li>
+            <li>IPs are hashed, not stored raw (privacy hygiene)</li>
+            <li>Rules deny client reads/writes to <code>rate_limit/*</code> — only admin SDK can touch it</li>
+            <li>The form's existing error display shows the 429 message to the user</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>IP comes from <code>request.headers.get('x-forwarded-for')</code> — first value if comma-separated. Firebase App Hosting proxies the same header.</li>
+            <li>Don't use an in-memory map for storage — Vercel functions are stateless and can scale horizontally. Firestore is the right store here.</li>
+            <li>Don't block the request waiting on the Firestore write for the timestamp append. Read for the check (must await), then write fire-and-forget after responding.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ FU-05 ============ -->
+      <article class="task" id="FU-05">
+        <header class="task-header">
+          <span class="task-id">FU-05</span>
+          <span class="task-title">Resolution note + link fields (admin-only)</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag med">medium</span>
+            <span class="tiny-tag m">medium</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> When admin marks a suggestion as Done (or anytime they want), optionally attach a "resolution note" + "result link" so the activity log captures how the suggestion was addressed. Useful when you ship something and want to remember which VOD/video/stream realized the idea.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>lib/types.ts</td><td>Add <code>resolutionNote?: string</code> and <code>resolutionLink?: string</code> to <code>SuggestionDoc</code> + <code>Suggestion</code>; add the same to <code>SaveReviewPayload</code>.</td></tr>
+            <tr><td>lib/firestore.ts</td><td>Update <code>docToSuggestion()</code> and <code>saveReview()</code> to handle the new fields. Update the activity log row to capture old/new resolutionNote and noteChanged-style flag if it changes.</td></tr>
+            <tr><td>components/admin/ReviewQueue.tsx</td><td>When the selected decision is "Done", reveal two extra inputs: "How did you address this?" (textarea) and "Result link" (text input). Pass them in the save payload.</td></tr>
+            <tr><td>components/admin/SuggestionBrowser.tsx</td><td>In the detail panel, when status is Done and there's a resolution note, display it prominently. Allow editing it inline (or via the same save flow).</td></tr>
+            <tr><td>components/admin/SuggestionDetail.tsx</td><td>Add a "Resolution" section that renders when the suggestion has a resolutionNote (regardless of status).</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>Both fields are optional. They appear contextually in the ReviewQueue when the admin selects "Done" as the decision. They're saved alongside the status + internalNotes in the same <code>saveReview()</code> call.</p>
+          <p>Activity log captures: <code>oldResolutionNote</code>, <code>newResolutionNote</code>, <code>resolutionChanged</code>. Same for the link. (Add these fields to <code>ActivityLogDoc</code>.)</p>
+          <p>UI for Resolution section in SuggestionDetail:</p>
+          <div class="code">{item.resolutionNote <span class="k">&amp;&amp;</span> (
+  &lt;<span class="t">div</span> className=<span class="s">"resolution-block"</span>&gt;
+    &lt;<span class="t">div</span> className=<span class="s">"field-label"</span>&gt;Resolution&lt;/<span class="t">div</span>&gt;
+    &lt;<span class="t">div</span> className=<span class="s">"field-val"</span>&gt;{item.resolutionNote}&lt;/<span class="t">div</span>&gt;
+    {item.resolutionLink <span class="k">&amp;&amp;</span> (
+      &lt;<span class="t">a</span> href={item.resolutionLink} target=<span class="s">"_blank"</span> className=<span class="s">"resolution-link"</span>&gt;
+        ↳ view result
+      &lt;/<span class="t">a</span>&gt;
+    )}
+  &lt;/<span class="t">div</span>&gt;
+)}</div>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>In Review Queue, selecting "Done" reveals the two extra inputs</li>
+            <li>Selecting any other decision hides them</li>
+            <li>Saving "Done" with notes persists them to Firestore</li>
+            <li>The activity log row captures old + new resolutionNote/resolutionLink</li>
+            <li>SuggestionDetail renders a Resolution block when resolutionNote is set, regardless of status</li>
+            <li>Editing a Done suggestion's resolution note via Browser detail saves correctly</li>
+            <li>Suggestions without these fields still load and render normally (no errors on legacy docs)</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Don't make the fields required. Many "Done" items won't have a meaningful link.</li>
+            <li>Validate the link looks like a URL only if it's non-empty. Don't enforce a strict regex — let the admin paste what they want.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ FU-06 ============ -->
+      <article class="task" id="FU-06">
+        <header class="task-header">
+          <span class="task-id">FU-06</span>
+          <span class="task-title">Per-source mini-dashboard at top of admin</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag med">medium</span>
+            <span class="tiny-tag m">medium</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> A small strip at the top of the admin showing per-source submission counts (all-time, 7d, 30d). Tells you at a glance which channels are bringing in suggestions.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>components/admin/SourceDashboard.tsx</td><td>NEW. Reads from a new helper in <code>lib/firestore.ts</code> and renders 5 source cards.</td></tr>
+            <tr><td>lib/firestore.ts</td><td>Add <code>fetchSourceBreakdown(): Promise&lt;Record&lt;string, { all: number; d7: number; d30: number; lastAt: Date | null }&gt;&gt;</code>.</td></tr>
+            <tr><td>app/admin/page.tsx</td><td>Render <code>&lt;SourceDashboard /&gt;</code> below the topbar, above the tabs. Make it collapsible (default open).</td></tr>
+            <tr><td>app/globals.css</td><td>Add <code>.source-dashboard</code>, <code>.source-mini-card</code> classes.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>5 small cards in a row (one per SOURCE_OPTION). Each card shows:</p>
+          <ul>
+            <li>Platform-colored dot + source name (small, mono)</li>
+            <li>Total count (large display font)</li>
+            <li>7d / 30d counts in smaller text below</li>
+            <li>Last submission timestamp (relative, e.g., "2h ago")</li>
+          </ul>
+          <p>Collapsible: a small chevron at the right collapses the strip to a one-line summary ("5 sources · 184 total"). State stored in localStorage.</p>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>SourceDashboard renders 5 source cards in admin</li>
+            <li>Each card shows correct all-time / 7d / 30d counts (verified by submitting test data and watching counts update)</li>
+            <li>Each card shows the platform-colored dot matching <code>sourcePillClass</code></li>
+            <li>The strip can be collapsed via the chevron; state persists across page navigation (localStorage)</li>
+            <li>On mobile, cards wrap or stack readably</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Don't fetch on every render — fetch once on mount, optionally refresh after a save.</li>
+            <li>If a source has 0 submissions, still render the card (with "0" / "—") — don't hide it.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ FU-07 ============ -->
+      <article class="task" id="FU-07">
+        <header class="task-header">
+          <span class="task-id">FU-07</span>
+          <span class="task-title">Document the 5 production source URLs</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag high">high</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Produce the 5 copy-ready production URLs the user will drop into their channels (Restream bot, Twitch panel, YouTube descriptions, Discord). Document them in a single place inside the admin so the user can copy-paste.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>components/admin/SourceLinks.tsx</td><td>NEW. Renders 5 cards, each with a copy-to-clipboard button.</td></tr>
+            <tr><td>app/admin/page.tsx</td><td>Add a new tab or sub-route for "Source Links" — accessible from the existing tab strip. (Don't replace one of the existing tabs.)</td></tr>
+            <tr><td>app/globals.css</td><td>Add styles if needed; reuse <code>.card</code> + custom classes.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <p>Add a 4th tab: "Source Links". When selected, renders <code>&lt;SourceLinks /&gt;</code>. The 5 URLs are:</p>
+          <table class="spec-table">
+            <thead><tr><th>source</th><th>URL pattern</th></tr></thead>
+            <tbody>
+              <tr><td class="name">Stream chat</td><td><code>https://&lt;your-domain&gt;/?source=Stream+chat</code></td></tr>
+              <tr><td class="name">Discord</td><td><code>https://&lt;your-domain&gt;/?source=Discord</code></td></tr>
+              <tr><td class="name">Twitch profile / About page</td><td><code>https://&lt;your-domain&gt;/?source=Twitch+profile+%2F+About+page</code></td></tr>
+              <tr><td class="name">YouTube stream page / description</td><td><code>https://&lt;your-domain&gt;/?source=YouTube+stream+page+%2F+description</code></td></tr>
+              <tr><td class="name">YouTube video description</td><td><code>https://&lt;your-domain&gt;/?source=YouTube+video+description</code></td></tr>
+            </tbody>
+          </table>
+
+          <p>Read <code>&lt;your-domain&gt;</code> from <code>window.location.origin</code> at render time so it always points at the live deployment. Each card has:</p>
+          <ul>
+            <li>Platform-colored dot + source name</li>
+            <li>The full URL (monospace)</li>
+            <li>A "Copy" button that copies the URL to clipboard</li>
+            <li>A small "Where to put it" hint (e.g., "Restream bot reply, Twitch chat command", "Twitch profile panel")</li>
+          </ul>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>New "Source Links" tab in admin</li>
+            <li>5 cards render with each source's URL</li>
+            <li>URLs use the current origin (works in both dev and prod)</li>
+            <li>Copy button writes the URL to clipboard; brief "Copied!" confirmation</li>
+            <li>Visiting one of these URLs in a new tab pre-fills the source in the form (already supported by app/page.tsx)</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Use <code>encodeURIComponent</code> for the source value when building the URL — the existing form already decodes via <code>decodeURIComponent</code>.</li>
+            <li>Don't hardcode the production domain. The page is meant to work as soon as the app is deployed anywhere.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ FU-08 ============ -->
+      <article class="task" id="FU-08">
+        <header class="task-header">
+          <span class="task-id">FU-08</span>
+          <span class="task-title">Discord outbound webhook on new submission (v1 backport)</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag med">medium</span>
+            <span class="tiny-tag s">small</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> On every new submission, POST a compact summary to a Discord channel webhook. Optional (env-var-gated), fire-and-forget.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>app/api/submit/route.ts</td><td>After successful Firestore write, fire-and-forget POST to the Discord webhook if env var is set.</td></tr>
+            <tr><td>.env.local.example</td><td>Add <code>DISCORD_WEBHOOK_URL=</code> placeholder.</td></tr>
+          </table>
+
+          <h4>Spec</h4>
+          <div class="code"><span class="k">async function</span> <span class="f">notifyDiscord</span>(data: <span class="t">SubmitPayload</span>, docId: <span class="t">string</span>) {
+  <span class="k">const</span> url = process.env.DISCORD_WEBHOOK_URL
+  <span class="k">if</span> (!url) <span class="k">return</span>
+
+  <span class="k">const</span> body = {
+    embeds: [{
+      title: <span class="s">`${data.category} — ${data.type}`</span>,
+      description: data.suggestion.slice(<span class="s">0</span>, <span class="s">400</span>),
+      color: <span class="s">0x4ade80</span>,
+      fields: [
+        { name: <span class="s">'Why'</span>, value: data.why.slice(<span class="s">0</span>, <span class="s">300</span>) },
+        { name: <span class="s">'Source'</span>, value: data.source, inline: <span class="k">true</span> },
+        { name: <span class="s">'From'</span>, value: data.username || <span class="s">'(anon)'</span>, inline: <span class="k">true</span> },
+      ],
+      footer: { text: <span class="s">`Doc: ${docId}`</span> },
+      timestamp: <span class="k">new</span> <span class="f">Date</span>().toISOString(),
+    }]
+  }
+
+  <span class="k">await</span> fetch(url, {
+    method: <span class="s">'POST'</span>,
+    headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },
+    body: <span class="t">JSON</span>.stringify(body),
+  })
+}</div>
+          <p>Call it after the Firestore write succeeds, in the same fire-and-forget pattern as <code>sendEmailNotification</code>:</p>
+          <div class="code">notifyDiscord(body, docRef.id).catch(err =&gt; console.error(<span class="s">'[discord]'</span>, err))</div>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>Without <code>DISCORD_WEBHOOK_URL</code> set, submission flow is unchanged (skips silently)</li>
+            <li>With the env var set to a valid Discord webhook URL, every successful submission posts an embed to the channel</li>
+            <li>Embed includes category/type as title, suggestion preview as description, fields for Why/Source/From, doc ID in the footer</li>
+            <li>Discord notification failure does NOT cause the submission to fail (caught + logged)</li>
+            <li><code>.env.local.example</code> documents the new env var</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li>Discord embed descriptions cap at ~4096 chars; field values at 1024. Stay safely under (use <code>.slice()</code>).</li>
+            <li>Don't include the matched profanity terms in the embed — those stay private. If <code>moderationState === 'flagged'</code>, you can add a small "⚠ flagged for admin review" footer line.</li>
+            <li>Discord rate-limits webhooks at ~30 messages / minute per channel. If submission volume could exceed this, queue them — but for v1, probably fine.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ FU-09 ============ -->
+      <article class="task" id="FU-09">
+        <header class="task-header">
+          <span class="task-id">FU-09</span>
+          <span class="task-title">Deploy to Firebase App Hosting + production env + Firestore rules</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag high">high</span>
+            <span class="tiny-tag m">medium</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal:</strong> Take the app from local dev to a live, shareable Firebase URL. Everything stays on Firebase: Firestore, Auth, and App Hosting for the Next.js server. Includes <code>apphosting.yaml</code>, secret setup, and production Firestore rules.</p>
+
+          <h4>Files</h4>
+          <table class="files-table">
+            <tr><td>apphosting.yaml</td><td>NEW. Firebase App Hosting config: run settings + public env var declarations. Secrets reference Secret Manager by name.</td></tr>
+            <tr><td>firebase.json</td><td>Remove the <code>hosting</code> block (static-hosting config); keep <code>firestore</code>. App Hosting config lives in <code>apphosting.yaml</code>, not here.</td></tr>
+            <tr><td>.env.local.example</td><td>Verify all env vars are documented; nothing else changes.</td></tr>
+          </table>
+
+          <h4>Spec — runbook for the executor</h4>
+          <ol>
+            <li><strong>Verify local dev works fully.</strong> All other tasks done first.</li>
+            <li><strong>Run <code>npm run build</code> locally.</strong> Must produce a clean build with no errors.</li>
+            <li><strong>Install / update Firebase CLI:</strong> <code>npm install -g firebase-tools</code>. Verify with <code>firebase --version</code> (need 13+).</li>
+            <li><strong>Log in and select project:</strong> <code>firebase login</code> → <code>firebase use &lt;project-id&gt;</code>.</li>
+            <li><strong>Initialize App Hosting in the project directory:</strong>
+              <code>firebase init apphosting</code>. This creates <code>apphosting.yaml</code> and asks to connect a GitHub repo. Connect the suggestion-box repo. App Hosting will auto-deploy on push to the selected branch.</li>
+            <li><strong>Store server-side secrets in Secret Manager</strong> (not in <code>apphosting.yaml</code> — secrets never go in the YAML file):
+              <ul>
+                <li><code>firebase apphosting:secrets:set FIREBASE_ADMIN_PROJECT_ID</code></li>
+                <li><code>firebase apphosting:secrets:set FIREBASE_ADMIN_CLIENT_EMAIL</code></li>
+                <li><code>firebase apphosting:secrets:set FIREBASE_ADMIN_PRIVATE_KEY</code> — paste the full PEM key including literal newlines when prompted</li>
+                <li><code>firebase apphosting:secrets:set NOTIFY_EMAIL_FROM</code> (optional)</li>
+                <li><code>firebase apphosting:secrets:set NOTIFY_EMAIL_PASS</code> (optional)</li>
+                <li><code>firebase apphosting:secrets:set NOTIFY_EMAIL_TO</code> (optional)</li>
+                <li><code>firebase apphosting:secrets:set DISCORD_WEBHOOK_URL</code> (optional)</li>
+              </ul>
+            </li>
+            <li><strong>Edit <code>apphosting.yaml</code></strong> to declare public env vars (safe to commit) and reference the secrets:
+              <div class="code">runConfig:
+  minInstances: 0
+
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "&lt;paste value&gt;"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "&lt;paste value&gt;"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "&lt;paste value&gt;"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "&lt;paste value&gt;"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "&lt;paste value&gt;"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "&lt;paste value&gt;"
+    availability: [BUILD, RUNTIME]
+  - variable: FIREBASE_ADMIN_PROJECT_ID
+    secret: FIREBASE_ADMIN_PROJECT_ID
+  - variable: FIREBASE_ADMIN_CLIENT_EMAIL
+    secret: FIREBASE_ADMIN_CLIENT_EMAIL
+  - variable: FIREBASE_ADMIN_PRIVATE_KEY
+    secret: FIREBASE_ADMIN_PRIVATE_KEY
+  - variable: NOTIFY_EMAIL_FROM
+    secret: NOTIFY_EMAIL_FROM
+  - variable: NOTIFY_EMAIL_PASS
+    secret: NOTIFY_EMAIL_PASS
+  - variable: NOTIFY_EMAIL_TO
+    secret: NOTIFY_EMAIL_TO
+  - variable: DISCORD_WEBHOOK_URL
+    secret: DISCORD_WEBHOOK_URL</div>
+            </li>
+            <li><strong>Update <code>firebase.json</code>:</strong> remove the <code>hosting</code> block. Leave only the <code>firestore</code> block.</li>
+            <li><strong>Deploy Firestore rules + indexes:</strong> <code>firebase deploy --only firestore</code>.</li>
+            <li><strong>Trigger the App Hosting deploy:</strong> push to the connected branch. Monitor progress in the Firebase console (App Hosting → your backend → Rollouts).</li>
+            <li><strong>Smoke test the live URL</strong> (shown in the Firebase console after deploy completes):
+              <ul>
+                <li>Submit a test suggestion from the public form</li>
+                <li>Verify it lands in Firestore</li>
+                <li>Sign in to <code>/admin</code> from an allow-listed Google account; verify the suggestion shows in the queue</li>
+                <li>Submit a flagged-content test; verify it's flagged in admin</li>
+                <li>Submit 4 in 10 seconds from the same browser; verify 4th gets 429</li>
+              </ul>
+            </li>
+            <li><strong>(Optional) Custom domain.</strong> Firebase console → App Hosting → your backend → Custom domains.</li>
+          </ol>
+
+          <h4>Acceptance</h4>
+          <ul class="acceptance">
+            <li>Public form is reachable at the Firebase App Hosting URL (or custom domain)</li>
+            <li>Admin sign-in works at <code>/admin</code> for allow-listed Google accounts; rejects others</li>
+            <li>Firestore writes go through</li>
+            <li>Activity log records admin actions</li>
+            <li>Email notifications fire (if configured)</li>
+            <li>Discord webhook fires (if configured)</li>
+            <li>Rate limiting rejects after 3 submissions/minute</li>
+            <li>Firestore production rules match <code>firestore.rules</code> in the repo</li>
+            <li><code>apphosting.yaml</code> committed (no secrets in it — values only for NEXT_PUBLIC vars, secret references for everything else)</li>
+          </ul>
+
+          <h4>Watch out for</h4>
+          <ul class="watch">
+            <li><strong>ASK THE USER before running <code>firebase deploy</code> or pushing to the deploy branch.</strong> Deploy is user-triggered only.</li>
+            <li><code>FIREBASE_ADMIN_PRIVATE_KEY</code>: when you run <code>firebase apphosting:secrets:set</code>, paste the raw PEM key with real newlines — Secret Manager stores it correctly. The existing <code>lib/firebase-admin.ts</code> may need to handle both <code>\n</code>-escaped and literal-newline formats; check it before deploying.</li>
+            <li>Don't commit <code>.env.local</code> ever. Don't put secret values in <code>apphosting.yaml</code> — only references (<code>secret: NAME</code>) go in that file.</li>
+            <li>App Hosting requires a GitHub connection during <code>firebase init apphosting</code>. If the repo isn't on GitHub yet, push it first.</li>
+            <li>If a Firestore index error appears in logs, Firebase CLI will print a URL to create it. Add it to <code>firestore.indexes.json</code> and redeploy rules.</li>
+            <li>The current <code>firebase.json</code> has a <code>hosting</code> block with a static rewrite — remove it. Leaving it alongside App Hosting will cause deploy conflicts.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ============ FU-10 (DONE) ============ -->
+      <article class="task" id="FU-10" style="opacity: 0.75;">
+        <header class="task-header" style="background: rgba(74,222,128,0.04);">
+          <span class="task-id">FU-10</span>
+          <span class="task-title">Migrate fonts to next/font/google</span>
+          <span class="tags">
+            <span class="tiny-tag fu">functional</span>
+            <span class="tiny-tag done">done</span>
+          </span>
+        </header>
+        <div class="task-body">
+          <p class="task-goal"><strong>Goal (already done):</strong> Replace the CSS <code>@import</code> for Google Fonts with <code>next/font/google</code> for self-hosting and zero FOUT.</p>
+          <p>Inter / Space Grotesk / JetBrains Mono are loaded via <code>app/layout.tsx</code>; CSS variables <code>--font-body</code>, <code>--font-display</code>, <code>--font-mono</code> are applied on <code>&lt;html&gt;</code>; <code>globals.css</code> references them via <code>var()</code>. No further action needed.</p>
+        </div>
+      </article>
+
+      <!-- ===================================================
+           v2 PREVIEW
+           =================================================== -->
+      <section class="plan-section" id="v2-preview">
+        <div class="plan-section-head">
+          <span class="num">C1</span>
+          <h2>v2 preview (queued, not in this plan)</h2>
+          <span class="meta">do not start until v1 ships</span>
+        </div>
+        <p class="plan-prose">Don't begin v2 work until every v1 task above is done and the app is live. The list below is a placeholder so the executor knows what's coming and can think about extensibility but should not act on it.</p>
+        <ul class="plan-prose">
+          <li><strong>Discord <code>/suggest</code> slash command</strong> via interactions endpoint (HTTP-only, no hosted bot)</li>
+          <li><strong>Optional email field on the form</strong> for v2 follow-ups</li>
+          <li><strong>Submitter follow-up emails on status change</strong></li>
+          <li><strong>Weekly digest email</strong> (Firebase scheduled function / Cloud Scheduler)</li>
+          <li><strong>Optional third-party hand-off</strong> (Notion / Trello webhook on Active status)</li>
+        </ul>
+      </section>
+
+      <!-- ===================================================
+           v3 PREVIEW
+           =================================================== -->
+      <section class="plan-section" id="v3-preview">
+        <div class="plan-section-head">
+          <span class="num">C2</span>
+          <h2>v3 preview (AI + voice, not in this plan)</h2>
+          <span class="meta">do not start until v2 ships</span>
+        </div>
+        <p class="plan-prose">v3 introduces AI (Gemini API) and voice notes together. Voice depends on transcription; we ship them as one phase. Out of scope for this plan.</p>
+        <ul class="plan-prose">
+          <li><strong>Voice notes</strong> on the form (record / play / retry) — see <a href="concept.html#voice-submit">concept.html</a> for designed UX</li>
+          <li><strong>Gemini transcription</strong> on upload</li>
+          <li><strong>AI clustering</strong> replacing the current keyword-score in <code>fetchRelated()</code></li>
+          <li><strong>AI-summarized weekly digest</strong> (themes, not counts)</li>
+          <li><strong>AI moderation</strong> layered on top of regex from FU-01</li>
+          <li><strong>Voice transcript moderation</strong></li>
+        </ul>
+      </section>
+
+      <!-- ===================================================
+           DECISION LOG
+           =================================================== -->
+      <section class="plan-section" id="decisions">
+        <div class="plan-section-head">
+          <span class="num">D1</span>
+          <h2>Decision log</h2>
+        </div>
+        <p class="plan-prose">Settled decisions that should not be relitigated.</p>
+        <table class="spec-table">
+          <thead><tr><th>decision</th><th>why</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="name">Admin-only intake (no public board)</td>
+              <td>The product replaces a Google Forms/Sheets flow. Public voting was a misread; not in scope.</td>
+            </tr>
+            <tr>
+              <td class="name">Google auth only, allow-listed</td>
+              <td>Admin is just the creator. No multi-tenant. No Discord/Twitch/YouTube OAuth needed.</td>
+            </tr>
+            <tr>
+              <td class="name">5-status pipeline</td>
+              <td>New / Active / Done / Duplicate / Rejected — terms the creator already uses. Don't reintroduce "on the board", "planned", etc.</td>
+            </tr>
+            <tr>
+              <td class="name">5 source labels (as in lib/config.ts)</td>
+              <td>Reflects real channels. Treat "Stream chat" as the combined Twitch+YT chat via Restream.</td>
+            </tr>
+            <tr>
+              <td class="name">Nodemailer + Gmail App Password for email</td>
+              <td>Already wired and free-tier. Don't migrate to Resend in v1.</td>
+            </tr>
+            <tr>
+              <td class="name">Firebase App Hosting for deploy</td>
+              <td>Keeps the entire stack on one platform (Firebase). Handles Next.js SSR and API routes natively via Cloud Run — no manual Functions wiring. Free tier covers expected load. Custom domain TBD.</td>
+            </tr>
+            <tr>
+              <td class="name">Plain CSS, no Tailwind / UI library</td>
+              <td>Existing app is plain CSS with a token system. Match it.</td>
+            </tr>
+            <tr>
+              <td class="name">Stricter moderation (anything obvious)</td>
+              <td>Per-flag email notification for the admin. Mild profanity not flagged.</td>
+            </tr>
+            <tr>
+              <td class="name">Voice notes deferred to v3</td>
+              <td>Voice without transcription is slow to triage; better to ship complete with AI in v3.</td>
+            </tr>
+            <tr>
+              <td class="name">Discord slash command is v2</td>
+              <td>Outbound Discord webhook (FU-08) is v1; inbound slash command waits for v2.</td>
+            </tr>
+            <tr>
+              <td class="name">Fonts: Inter / Space Grotesk / JetBrains Mono</td>
+              <td>Loaded via next/font/google. Applied across body / headers / metadata.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ===================================================
+           OPEN QUESTIONS
+           =================================================== -->
+      <section class="plan-section" id="open">
+        <div class="plan-section-head">
+          <span class="num">D2</span>
+          <h2>Open questions (need user input before relevant tasks)</h2>
+        </div>
+        <div class="callout open">
+          <span class="icon">?</span>
+          <div class="body"><strong>Profanity word list (blocks FU-01).</strong> User must approve the final list. Executor: do NOT ship a default. Stop, ask, paste the proposed list, get confirmation, then proceed.</div>
+        </div>
+        <div class="callout open">
+          <span class="icon">?</span>
+          <div class="body"><strong>Brand asset / logo (refines DP-01 and DP-07).</strong> If user provides an actual logo file, replace the gradient placeholder. Until then, gradient placeholder is fine.</div>
+        </div>
+        <div class="callout open">
+          <span class="icon">?</span>
+          <div class="body"><strong>Custom domain (FU-09).</strong> Default Firebase App Hosting domain works for launch. Real domain TBD with user — add via Firebase console → App Hosting → Custom domains.</div>
+        </div>
+        <div class="callout open">
+          <span class="icon">?</span>
+          <div class="body"><strong>Discord webhook URL (FU-08).</strong> User provides a channel webhook URL. Optional — feature self-disables without it.</div>
+        </div>
+        <div class="callout open">
+          <span class="icon">?</span>
+          <div class="body"><strong>Brand-forward intensity (refines DP-02).</strong> The plan keeps the existing dark-green palette and just adds a purple accent. If user wants a more neon push, that's a follow-up; this plan deliberately keeps it conservative.</div>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           FILE INVENTORY
+           =================================================== -->
+      <section class="plan-section" id="inventory">
+        <div class="plan-section-head">
+          <span class="num">D3</span>
+          <h2>File inventory &amp; reference</h2>
+        </div>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">Real app code (do not move/rename without an explicit task)</h3>
+        <table class="spec-table">
+          <thead><tr><th>path</th><th>purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="name">app/layout.tsx</td><td>Root layout, next/font setup</td></tr>
+            <tr><td class="name">app/globals.css</td><td>All app styles (single file)</td></tr>
+            <tr><td class="name">app/page.tsx</td><td>Public submission form</td></tr>
+            <tr><td class="name">app/success/page.tsx</td><td>Thank-you page</td></tr>
+            <tr><td class="name">app/admin/page.tsx</td><td>Admin auth gate + tab routing</td></tr>
+            <tr><td class="name">app/api/submit/route.ts</td><td>POST handler (validate, write, notify)</td></tr>
+            <tr><td class="name">components/admin/ReviewQueue.tsx</td><td>Single-focus triage</td></tr>
+            <tr><td class="name">components/admin/SuggestionBrowser.tsx</td><td>List + detail + filters</td></tr>
+            <tr><td class="name">components/admin/SuggestionDetail.tsx</td><td>Suggestion display block</td></tr>
+            <tr><td class="name">components/admin/ActivityLog.tsx</td><td>Grouped log view</td></tr>
+            <tr><td class="name">lib/config.ts</td><td>Canonical constants</td></tr>
+            <tr><td class="name">lib/types.ts</td><td>Shared types</td></tr>
+            <tr><td class="name">lib/firebase.ts</td><td>Client SDK init</td></tr>
+            <tr><td class="name">lib/firebase-admin.ts</td><td>Admin SDK init</td></tr>
+            <tr><td class="name">lib/firestore.ts</td><td>Query helpers</td></tr>
+            <tr><td class="name">lib/utils.ts</td><td>Text + status helpers</td></tr>
+            <tr><td class="name">firebase.json</td><td>Firebase config</td></tr>
+            <tr><td class="name">firestore.rules</td><td>Access rules</td></tr>
+            <tr><td class="name">firestore.indexes.json</td><td>Composite indexes</td></tr>
+            <tr><td class="name">.env.local</td><td>Local secrets (gitignored)</td></tr>
+            <tr><td class="name">.env.local.example</td><td>Documented env shape</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin: 18px 0 10px;color:var(--text);">New files this plan introduces</h3>
+        <table class="spec-table">
+          <thead><tr><th>path</th><th>introduced by</th></tr></thead>
+          <tbody>
+            <tr><td class="name">components/Brand.tsx</td><td>DP-01</td></tr>
+            <tr><td class="name">components/admin/CaughtUp.tsx</td><td>DP-03</td></tr>
+            <tr><td class="name">components/admin/SourceDashboard.tsx</td><td>FU-06</td></tr>
+            <tr><td class="name">components/admin/SourceLinks.tsx</td><td>FU-07</td></tr>
+            <tr><td class="name">lib/moderation.ts</td><td>FU-01</td></tr>
+            <tr><td class="name">lib/rate-limit.ts</td><td>FU-04</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin: 18px 0 10px;color:var(--text);">Design mockup reference (not deployed)</h3>
+        <ul class="plan-prose">
+          <li><a href="index.html">index.html</a> — palette overview, brand mark reference</li>
+          <li><a href="cards.html">cards.html</a> — card variants (mostly exploratory; only soft-monster aesthetic applies to admin styling)</li>
+          <li><a href="admin.html">admin.html</a> — admin layout variants (existing real admin is closest to "single-pane inbox")</li>
+          <li><a href="empty.html">empty.html</a> — empty-state patterns (DP-03 borrows scene 01; DP-04/05 use the no-results pattern)</li>
+          <li><a href="concept.html">concept.html</a> — consolidated direction (some sections do not apply to the real admin-only product; see plan.html for what's real)</li>
+        </ul>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin: 18px 0 10px;color:var(--text);">Useful commands</h3>
+        <table class="spec-table">
+          <thead><tr><th>command</th><th>does</th></tr></thead>
+          <tbody>
+            <tr><td class="name">npm run dev</td><td>Start local dev server at :3000</td></tr>
+            <tr><td class="name">npm run build</td><td>Production build (catches TS + lint errors)</td></tr>
+            <tr><td class="name">npm run lint</td><td>ESLint check</td></tr>
+            <tr><td class="name">npx tsc --noEmit</td><td>TypeScript type check</td></tr>
+            <tr><td class="name">firebase deploy --only firestore</td><td>Push rules + indexes (user-triggered)</td></tr>
+            <tr><td class="name">firebase init apphosting</td><td>One-time setup: create apphosting.yaml, connect GitHub repo (user-triggered)</td></tr>
+            <tr><td class="name">firebase apphosting:secrets:set NAME</td><td>Store a secret in Secret Manager (user-triggered)</td></tr>
+            <tr><td class="name">git push origin main</td><td>Triggers App Hosting deploy (once backend is connected)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer class="page-footer">
+        <span>Nasty N8 Suggestion Box / plan v1 · executable spec</span>
+        <span>updated 2026-05-24 · 19 v1 tasks · 1 done</span>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // Highlight TOC link as the user scrolls
+    const links = document.querySelectorAll('.toc-link');
+    const targets = Array.from(links)
+      .map(l => document.querySelector(l.getAttribute('href')))
+      .filter(Boolean);
+    function onScroll() {
+      const y = window.scrollY + 140;
+      let activeIdx = 0;
+      targets.forEach((s, i) => { if (s && s.offsetTop <= y) activeIdx = i; });
+      links.forEach((l, i) => l.classList.toggle('active', i === activeIdx));
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

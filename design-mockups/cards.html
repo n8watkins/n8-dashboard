@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Public card variants — bf6 suggestion box</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ============ Shared card-page bits ============ */
+    .card-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .vote-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .vote-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 120ms;
+      font-size: 14px;
+    }
+    .vote-btn:hover { border-color: var(--neon); color: var(--neon); }
+    .vote-btn.down:hover { border-color: var(--danger); color: var(--danger); }
+    .vote-count {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      min-height: 18px;
+    }
+
+    /* =========================================
+       VARIANT 1 — Brutalist neon
+       Heavy mono, sharp corners, glitchy
+       ========================================= */
+    .v1-card {
+      background: #050805;
+      border: 2px solid var(--neon);
+      padding: 20px;
+      position: relative;
+      font-family: var(--font-mono);
+      box-shadow:
+        4px 4px 0 var(--neon-dim),
+        inset 0 0 40px rgba(57, 255, 20, 0.04);
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    }
+    .v1-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: var(--neon);
+      box-shadow: 0 0 12px var(--neon-glow);
+    }
+    .v1-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--neon-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      border-bottom: 1px dashed rgba(57, 255, 20, 0.3);
+      padding-bottom: 8px;
+    }
+    .v1-meta .id { color: var(--text-dim); }
+    .v1-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: #f0fff0;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .v1-body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .v1-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: space-between;
+    }
+    .v1-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .v1-votes {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .v1-vote-btn {
+      background: transparent;
+      border: 1px solid var(--neon);
+      color: var(--neon);
+      padding: 4px 10px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      transition: all 100ms;
+    }
+    .v1-vote-btn:hover {
+      background: var(--neon);
+      color: #001000;
+      box-shadow: 0 0 16px var(--neon-glow);
+    }
+    .v1-vote-btn.down { border-color: var(--text-dim); color: var(--text-muted); }
+    .v1-vote-btn.down:hover { background: var(--text-muted); color: var(--bg); box-shadow: none; }
+
+    /* =========================================
+       VARIANT 2 — Soft monster
+       Rounded, mostly text, subtle brand
+       ========================================= */
+    .v2-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      gap: 16px;
+      transition: all 200ms;
+    }
+    .v2-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-1px);
+    }
+    .v2-body { flex: 1; min-width: 0; }
+    .v2-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .v2-author {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .v2-avatar {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--neon) 0%, var(--purple) 100%);
+      flex-shrink: 0;
+    }
+    .v2-name { font-weight: 500; color: var(--text); }
+    .v2-time { color: var(--text-dim); font-size: 12px; }
+    .v2-title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+    .v2-text {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 14px;
+      line-height: 1.55;
+    }
+    .v2-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* =========================================
+       VARIANT 3 — Retro arcade / CRT
+       Scanlines, pixel borders, big neon vote
+       ========================================= */
+    .v3-card {
+      background: #0a0e0a;
+      border: 3px double var(--neon);
+      padding: 18px 18px 18px 90px;
+      position: relative;
+      font-family: 'VT323', monospace;
+      overflow: hidden;
+    }
+    .v3-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(57, 255, 20, 0.04) 2px, rgba(57, 255, 20, 0.04) 3px);
+      pointer-events: none;
+    }
+    .v3-vote-block {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 72px;
+      background: rgba(57, 255, 20, 0.08);
+      border-right: 1px solid var(--border-neon);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .v3-vote-num {
+      font-family: 'VT323', monospace;
+      font-size: 36px;
+      color: var(--neon);
+      text-shadow: 0 0 12px var(--neon-glow);
+      line-height: 1;
+    }
+    .v3-vote-label {
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      color: var(--neon-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .v3-vote-controls {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .v3-vote-btn {
+      background: transparent;
+      border: 1px solid var(--neon);
+      color: var(--neon);
+      width: 24px; height: 24px;
+      cursor: pointer;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .v3-vote-btn:hover { background: var(--neon); color: #001000; }
+    .v3-vote-btn.down { border-color: var(--text-dim); color: var(--text-muted); }
+    .v3-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      color: var(--neon-soft);
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .v3-title {
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #f0fff0;
+      line-height: 1.1;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .v3-body {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .v3-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    /* =========================================
+       VARIANT 4 — Sticker / poster
+       Layered, slight rotation, hand-feel
+       ========================================= */
+    .v4-stage { padding: 56px 40px !important; }
+    .v4-card {
+      background: #f4ffe8;
+      color: #0a0e0a;
+      padding: 20px 22px;
+      position: relative;
+      box-shadow:
+        0 1px 0 rgba(0,0,0,0.4),
+        0 12px 24px rgba(0,0,0,0.5),
+        inset 0 0 0 1px rgba(0,0,0,0.1);
+      transform: rotate(-1deg);
+      font-family: var(--font-body);
+    }
+    .v4-card.right { transform: rotate(0.8deg); }
+    .v4-card::after {
+      content: '';
+      position: absolute;
+      top: -8px; left: 40px;
+      width: 80px; height: 16px;
+      background: rgba(57, 255, 20, 0.5);
+      transform: rotate(-2deg);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .v4-stamp {
+      position: absolute;
+      top: -14px; right: 20px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 11px;
+      color: #0a0e0a;
+      background: var(--neon);
+      padding: 6px 10px;
+      border-radius: 999px;
+      transform: rotate(3deg);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .v4-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #4a5a4a;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .v4-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: #0a0e0a;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+    .v4-text {
+      font-size: 13px;
+      color: #2a3a2a;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .v4-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 2px dashed rgba(10, 14, 10, 0.2);
+    }
+    .v4-votes { display: flex; gap: 8px; align-items: center; font-family: var(--font-mono); font-size: 13px; }
+    .v4-vbtn {
+      background: #0a0e0a;
+      color: var(--neon);
+      border: 0;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .v4-vbtn.down { background: transparent; color: #0a0e0a; border: 1px solid #0a0e0a; }
+    .v4-source-paper {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      background: #0a0e0a;
+      color: var(--neon);
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.05em;
+    }
+
+    /* =========================================
+       VARIANT 5 — Terminal / log
+       Minimal, monospace, command-line vibe
+       ========================================= */
+    .v5-stage { padding: 0 !important; background: #050805; }
+    .v5-window {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+      background: #050805;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .v5-title-bar {
+      background: var(--bg-elevated);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .v5-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .v5-title-bar .label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+    .v5-rows { padding: 8px 0; }
+    .v5-row {
+      padding: 12px 20px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 16px;
+      align-items: start;
+      border-bottom: 1px solid rgba(36, 48, 36, 0.5);
+      transition: background 100ms;
+    }
+    .v5-row:last-child { border-bottom: 0; }
+    .v5-row:hover { background: rgba(57, 255, 20, 0.03); }
+    .v5-prompt {
+      color: var(--neon);
+      font-weight: 600;
+      padding-top: 1px;
+    }
+    .v5-content { min-width: 0; }
+    .v5-line1 {
+      color: var(--text);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .v5-line1 strong { color: var(--neon-soft); font-weight: 600; }
+    .v5-line2 {
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .v5-line3 {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      gap: 12px;
+    }
+    .v5-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .v5-vbtn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 2px 8px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      border-radius: 3px;
+    }
+    .v5-vbtn:hover { border-color: var(--neon); color: var(--neon); }
+    .v5-vbtn.active { border-color: var(--neon); color: var(--neon); background: rgba(57, 255, 20, 0.08); }
+
+    /* ====== Pick bar ====== */
+    .pick-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 20px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+    }
+    .pick-bar .pros {
+      flex: 1;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .pick-bar .pros strong { color: var(--text); }
+    .pick-bar .who-for {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span>bf6 / suggestion box</span>
+    </div>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="cards.html" class="active">Public cards</a>
+      <a href="admin.html">Admin layouts</a>
+      <a href="empty.html">Empty states</a>
+      <a href="concept.html">Concept</a>
+      <a href="plan.html">Plan</a>
+    </nav>
+    <div class="right">
+      <span>5 variants</span>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-header">
+      <div class="eyebrow">01 · public surface</div>
+      <h1>Public board card</h1>
+      <p>Five distinct directions for the single most-seen unit of the product. Same data in each — only the look changes. Pick a favorite (or steal pieces from multiple).</p>
+    </div>
+
+    <!-- ================== VARIANT 1 ================== -->
+    <section class="variant">
+      <div class="variant-head">
+        <span class="num">01</span>
+        <h2>Brutalist neon</h2>
+        <span class="tag">heavy · mono · sharp · "this is for the gremlins"</span>
+      </div>
+      <div class="pick-bar">
+        <div class="pros"><strong>Strengths:</strong> maximum brand. Looks unmistakably yours. Stands out hard in a sea of generic SaaS suggestion boxes.</div>
+        <div class="who-for">if "monster" should win</div>
+      </div>
+      <div class="variant-stage">
+        <div class="card-row">
+          <article class="v1-card">
+            <div class="v1-meta">
+              <span>SGSTN-0421</span>
+              <span class="id">2 days ago</span>
+            </div>
+            <div class="v1-title">Play Subnautica on the Friday stream</div>
+            <p class="v1-body">Atmospheric horror would suit the late-night slot perfectly. You did the Voidwalker series last year and it was peak.</p>
+            <div class="v1-footer">
+              <div class="v1-tags">
+                <span class="source-chip source-twitch"><span class="dot"></span>twitch · chat</span>
+                <span class="status-pill status-board">on the board</span>
+              </div>
+              <div class="v1-votes">
+                <button class="v1-vote-btn">▲ 247</button>
+                <button class="v1-vote-btn down">▼ 12</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="v1-card">
+            <div class="v1-meta">
+              <span>SGSTN-0420</span>
+              <span class="id">3 days ago</span>
+            </div>
+            <div class="v1-title">Tier list of every boss fight ever streamed</div>
+            <p class="v1-body">Compilation video idea — could be a chill weekend upload. Audience-sourced rankings would make it interactive.</p>
+            <div class="v1-footer">
+              <div class="v1-tags">
+                <span class="source-chip source-youtube"><span class="dot"></span>youtube · description</span>
+                <span class="status-pill status-planned">planned</span>
+              </div>
+              <div class="v1-votes">
+                <button class="v1-vote-btn">▲ 189</button>
+                <button class="v1-vote-btn down">▼ 4</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== VARIANT 2 ================== -->
+    <section class="variant">
+      <div class="variant-head">
+        <span class="num">02</span>
+        <h2>Soft monster</h2>
+        <span class="tag">rounded · readable · brand in accents only</span>
+      </div>
+      <div class="pick-bar">
+        <div class="pros"><strong>Strengths:</strong> easiest to scan a long list. Most accessible. Brand lives in vote color, gradient avatar, and accents — not the whole card.</div>
+        <div class="who-for">if utility should win</div>
+      </div>
+      <div class="variant-stage">
+        <div class="card-row">
+          <article class="v2-card">
+            <div class="vote-stack">
+              <button class="vote-btn" aria-label="upvote">▲</button>
+              <span class="vote-count">247</span>
+              <button class="vote-btn down" aria-label="downvote">▼</button>
+            </div>
+            <div class="v2-body">
+              <div class="v2-head">
+                <div class="v2-author">
+                  <div class="v2-avatar"></div>
+                  <span class="v2-name">larrythelich</span>
+                </div>
+                <span class="v2-time">· 2d ago</span>
+                <span class="status-pill status-board">on the board</span>
+              </div>
+              <h3 class="v2-title">Play Subnautica on the Friday stream</h3>
+              <p class="v2-text">Atmospheric horror would suit the late-night slot perfectly. You did the Voidwalker series last year and it was peak.</p>
+              <div class="v2-footer">
+                <span class="source-chip source-twitch"><span class="dot"></span>twitch · chat</span>
+                <span style="font-size:12px;color:var(--text-dim);">· last Friday's stream</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="v2-card">
+            <div class="vote-stack">
+              <button class="vote-btn" aria-label="upvote">▲</button>
+              <span class="vote-count">189</span>
+              <button class="vote-btn down" aria-label="downvote">▼</button>
+            </div>
+            <div class="v2-body">
+              <div class="v2-head">
+                <div class="v2-author">
+                  <div class="v2-avatar" style="background: linear-gradient(135deg, var(--purple), var(--neon));"></div>
+                  <span class="v2-name">anonymous</span>
+                </div>
+                <span class="v2-time">· 3d ago</span>
+                <span class="status-pill status-planned">planned</span>
+              </div>
+              <h3 class="v2-title">Tier list of every boss fight ever streamed</h3>
+              <p class="v2-text">Compilation video idea — could be a chill weekend upload. Audience-sourced rankings would make it interactive.</p>
+              <div class="v2-footer">
+                <span class="source-chip source-youtube"><span class="dot"></span>youtube · description link</span>
+                <span style="font-size:12px;color:var(--text-dim);">· "Best moments 2026"</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== VARIANT 3 ================== -->
+    <section class="variant">
+      <div class="variant-head">
+        <span class="num">03</span>
+        <h2>Retro arcade / CRT</h2>
+        <span class="tag">scanlines · pixel font · big neon score</span>
+      </div>
+      <div class="pick-bar">
+        <div class="pros"><strong>Strengths:</strong> votes are the hero — the big neon number makes upvoting feel like racking up a high score. Strong personality. Best for a smaller list.</div>
+        <div class="who-for">if leaderboard-energy should win</div>
+      </div>
+      <div class="variant-stage">
+        <div class="card-row">
+          <article class="v3-card">
+            <div class="v3-vote-block">
+              <div class="v3-vote-num">247</div>
+              <div class="v3-vote-label">votes</div>
+              <div class="v3-vote-controls">
+                <button class="v3-vote-btn">▲</button>
+                <button class="v3-vote-btn down">▼</button>
+              </div>
+            </div>
+            <div class="v3-head">
+              <span>&gt; SGSTN_0421</span>
+              <span class="status-pill status-board">on the board</span>
+            </div>
+            <div class="v3-title">PLAY SUBNAUTICA ON FRIDAY</div>
+            <p class="v3-body">Atmospheric horror would suit the late-night slot perfectly. You did the Voidwalker series last year and it was peak.</p>
+            <div class="v3-footer">
+              <span class="source-chip source-twitch"><span class="dot"></span>twitch · chat</span>
+              <span>· @larrythelich · 2d</span>
+            </div>
+          </article>
+
+          <article class="v3-card">
+            <div class="v3-vote-block">
+              <div class="v3-vote-num">189</div>
+              <div class="v3-vote-label">votes</div>
+              <div class="v3-vote-controls">
+                <button class="v3-vote-btn">▲</button>
+                <button class="v3-vote-btn down">▼</button>
+              </div>
+            </div>
+            <div class="v3-head">
+              <span>&gt; SGSTN_0420</span>
+              <span class="status-pill status-planned">planned</span>
+            </div>
+            <div class="v3-title">BOSS FIGHT TIER LIST</div>
+            <p class="v3-body">Compilation video idea — could be a chill weekend upload. Audience-sourced rankings would make it interactive.</p>
+            <div class="v3-footer">
+              <span class="source-chip source-youtube"><span class="dot"></span>youtube</span>
+              <span>· anonymous · 3d</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== VARIANT 4 ================== -->
+    <section class="variant">
+      <div class="variant-head">
+        <span class="num">04</span>
+        <h2>Sticker / poster wall</h2>
+        <span class="tag">layered · hand-feel · slight rotation · physical</span>
+      </div>
+      <div class="pick-bar">
+        <div class="pros"><strong>Strengths:</strong> feels like a real-world suggestion wall, not a SaaS list. Memorable, sharable as screenshots. Higher visual cost per card so works best with fewer cards visible.</div>
+        <div class="who-for">if vibes should win</div>
+      </div>
+      <div class="variant-stage v4-stage">
+        <div class="card-row">
+          <article class="v4-card">
+            <span class="v4-stamp">on the board</span>
+            <div class="v4-meta">
+              <span class="v4-source-paper">twitch · chat</span>
+              <span>· @larrythelich · 2d ago</span>
+            </div>
+            <h3 class="v4-title">Play Subnautica on the Friday stream</h3>
+            <p class="v4-text">Atmospheric horror would suit the late-night slot perfectly. You did the Voidwalker series last year and it was peak.</p>
+            <div class="v4-footer">
+              <span style="font-family:var(--font-mono);font-size:11px;color:#4a5a4a;">SGSTN-0421</span>
+              <div class="v4-votes">
+                <button class="v4-vbtn">▲ 247</button>
+                <button class="v4-vbtn down">▼ 12</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="v4-card right">
+            <span class="v4-stamp" style="background: var(--neon); color: #0a0e0a;">planned</span>
+            <div class="v4-meta">
+              <span class="v4-source-paper">youtube · description</span>
+              <span>· anonymous · 3d ago</span>
+            </div>
+            <h3 class="v4-title">Tier list of every boss fight</h3>
+            <p class="v4-text">Compilation video idea — could be a chill weekend upload. Audience-sourced rankings would make it interactive.</p>
+            <div class="v4-footer">
+              <span style="font-family:var(--font-mono);font-size:11px;color:#4a5a4a;">SGSTN-0420</span>
+              <div class="v4-votes">
+                <button class="v4-vbtn">▲ 189</button>
+                <button class="v4-vbtn down">▼ 4</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== VARIANT 5 ================== -->
+    <section class="variant">
+      <div class="variant-head">
+        <span class="num">05</span>
+        <h2>Terminal log</h2>
+        <span class="tag">dense · monospace · zero decoration</span>
+      </div>
+      <div class="pick-bar">
+        <div class="pros"><strong>Strengths:</strong> highest information density. Looks like a developer tool, which fits the streaming-tech crossover audience. Scrolls forever without fatigue.</div>
+        <div class="who-for">if power-user feel should win</div>
+      </div>
+      <div class="variant-stage v5-stage">
+        <div class="v5-window">
+          <div class="v5-title-bar">
+            <span class="v5-dot" style="background:#ff5f57"></span>
+            <span class="v5-dot" style="background:#febc2e"></span>
+            <span class="v5-dot" style="background:#28c840"></span>
+            <span class="label">~/suggestions — public</span>
+          </div>
+          <div class="v5-rows">
+            <div class="v5-row">
+              <span class="v5-prompt">&gt;</span>
+              <div class="v5-content">
+                <div class="v5-line1">
+                  <strong>play subnautica on the friday stream</strong>
+                  <span class="status-pill status-board">on the board</span>
+                </div>
+                <div class="v5-line2">Atmospheric horror would suit the late-night slot perfectly. You did the Voidwalker series last year and it was peak.</div>
+                <div class="v5-line3">
+                  <span>@larrythelich</span>
+                  <span>· twitch · chat</span>
+                  <span>· 2d ago</span>
+                  <span>· SGSTN-0421</span>
+                </div>
+              </div>
+              <div class="v5-actions">
+                <button class="v5-vbtn active">▲ 247</button>
+                <button class="v5-vbtn">▼ 12</button>
+              </div>
+            </div>
+            <div class="v5-row">
+              <span class="v5-prompt">&gt;</span>
+              <div class="v5-content">
+                <div class="v5-line1">
+                  <strong>tier list of every boss fight ever streamed</strong>
+                  <span class="status-pill status-planned">planned</span>
+                </div>
+                <div class="v5-line2">Compilation video idea — could be a chill weekend upload. Audience-sourced rankings would make it interactive.</div>
+                <div class="v5-line3">
+                  <span>anonymous</span>
+                  <span>· youtube · description</span>
+                  <span>· 3d ago</span>
+                  <span>· SGSTN-0420</span>
+                </div>
+              </div>
+              <div class="v5-actions">
+                <button class="v5-vbtn">▲ 189</button>
+                <button class="v5-vbtn">▼ 4</button>
+              </div>
+            </div>
+            <div class="v5-row">
+              <span class="v5-prompt">&gt;</span>
+              <div class="v5-content">
+                <div class="v5-line1">
+                  <strong>stream with larry again, the chemistry was great</strong>
+                  <span class="status-pill status-shipped">shipped</span>
+                </div>
+                <div class="v5-line2">Last collab pulled 4× your average concurrents. Audience hasn't shut up about it since.</div>
+                <div class="v5-line3">
+                  <span>@discordmod_aria</span>
+                  <span>· discord · #suggestions</span>
+                  <span>· 1w ago</span>
+                  <span>· SGSTN-0398</span>
+                </div>
+              </div>
+              <div class="v5-actions">
+                <button class="v5-vbtn">▲ 412</button>
+                <button class="v5-vbtn">▼ 2</button>
+              </div>
+            </div>
+            <div class="v5-row">
+              <span class="v5-prompt">&gt;</span>
+              <div class="v5-content">
+                <div class="v5-line1">
+                  <strong>more cooking content please</strong>
+                  <span class="status-pill status-new">new</span>
+                </div>
+                <div class="v5-line2">The "cursed kitchen" stream was the funniest thing all month. More of that, less Apex.</div>
+                <div class="v5-line3">
+                  <span>@chefkrush</span>
+                  <span>· youtube · pinned comment</span>
+                  <span>· 14h ago</span>
+                  <span>· SGSTN-0422</span>
+                </div>
+              </div>
+              <div class="v5-actions">
+                <button class="v5-vbtn">▲ 78</button>
+                <button class="v5-vbtn">▼ 8</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <span>← <a href="index.html">back to overview</a></span>
+      <span>next: <a href="admin.html">admin layouts →</a></span>
+    </footer>
+  </main>
+</body>
+</html>

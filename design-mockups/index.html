@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>bf6 suggestion box — design mockups</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      padding: 96px 0 64px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: 64px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      margin-bottom: 24px;
+    }
+    .hero h1 .accent {
+      background: linear-gradient(135deg, var(--neon) 0%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .hero .meta {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 24px;
+      display: flex;
+      gap: 24px;
+    }
+    .hero .meta span { display: flex; align-items: center; gap: 6px; }
+    .hero .meta .ok::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--neon); box-shadow: 0 0 8px var(--neon-glow);
+    }
+
+    .hero-art {
+      position: relative;
+      aspect-ratio: 1;
+      max-width: 480px;
+      justify-self: end;
+    }
+    .hero-art .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.6;
+    }
+    .hero-art .blob.g {
+      width: 60%; height: 60%;
+      background: var(--neon);
+      top: 10%; left: 10%;
+      animation: float 8s ease-in-out infinite;
+    }
+    .hero-art .blob.p {
+      width: 50%; height: 50%;
+      background: var(--purple);
+      bottom: 5%; right: 5%;
+      animation: float 10s ease-in-out infinite reverse;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
+    }
+    .hero-art .grid {
+      position: absolute;
+      inset: 12%;
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(rgba(57, 255, 20, 0.04) 1px, transparent 1px) 0 0 / 24px 24px,
+        linear-gradient(90deg, rgba(57, 255, 20, 0.04) 1px, transparent 1px) 0 0 / 24px 24px,
+        rgba(10, 14, 10, 0.6);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-art .mark {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--neon);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .sections {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 32px;
+    }
+    .section-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: all 200ms;
+      display: block;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--neon-glow), transparent 50%);
+      opacity: 0;
+      transition: opacity 200ms;
+      pointer-events: none;
+    }
+    .section-card:hover {
+      border-color: var(--neon);
+      transform: translateY(-2px);
+      text-shadow: none;
+    }
+    .section-card:hover::before { opacity: 0.08; }
+
+    .section-card .num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+      letter-spacing: 0.15em;
+    }
+    .section-card h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .section-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .section-card .count {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--neon);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      background: rgba(57, 255, 20, 0.06);
+      border: 1px solid var(--border-neon);
+    }
+
+    .palette {
+      margin-top: 80px;
+      padding: 32px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .palette h2 {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 12px;
+    }
+    .swatch {
+      aspect-ratio: 1;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .swatch .label {
+      position: absolute;
+      bottom: 8px; left: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+    .swatch .hex {
+      position: absolute;
+      bottom: 8px; right: 8px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; padding: 48px 0; }
+      .hero h1 { font-size: 44px; }
+      .hero-art { display: none; }
+      .sections { grid-template-columns: 1fr; }
+      .palette-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span>bf6 / suggestion box</span>
+    </div>
+    <nav>
+      <a href="index.html" class="active">Overview</a>
+      <a href="cards.html">Public cards</a>
+      <a href="admin.html">Admin layouts</a>
+      <a href="empty.html">Empty states</a>
+      <a href="concept.html">Concept</a>
+      <a href="plan.html">Plan</a>
+    </nav>
+    <div class="right">
+      <span>v0.1 mockups</span>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <div class="page-header" style="margin-bottom: 0;">
+          <div class="eyebrow">design exploration · pick your favorites</div>
+          <h1>Suggestion box, <span class="accent">reimagined</span>.</h1>
+          <p>Multiple visual directions for the public-facing board and the admin panel. Click in, look around, vote on what feels right. Nothing is locked.</p>
+          <div class="meta">
+            <span class="ok">Firebase ready</span>
+            <span class="ok">no AI required (MVP v1)</span>
+            <span class="ok">mobile-first</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="blob g"></div>
+        <div class="blob p"></div>
+        <div class="grid"><span class="mark">bf6 — suggestions</span></div>
+      </div>
+    </section>
+
+    <div class="page-header">
+      <div class="eyebrow">sections</div>
+      <h1 style="font-size: 28px;">What's inside</h1>
+      <p>Three areas to evaluate. Pick favorites in each — they don't have to come from the same family.</p>
+    </div>
+
+    <div class="sections">
+      <a href="cards.html" class="section-card">
+        <div class="num">01 / public surface</div>
+        <h3>Public board cards</h3>
+        <p>How a single suggestion looks on the public board. Five very different directions — from terminal-grimy to soft-and-rounded.</p>
+        <span class="count">5 variants</span>
+      </a>
+      <a href="admin.html" class="section-card">
+        <div class="num">02 / your daily driver</div>
+        <h3>Admin panel layouts</h3>
+        <p>How you triage incoming suggestions. Single-pane, three-pane, kanban, split. Each rendered with real-feeling data.</p>
+        <span class="count">4 variants</span>
+      </a>
+      <a href="empty.html" class="section-card">
+        <div class="num">03 / first impressions</div>
+        <h3>Empty states</h3>
+        <p>The moments most tools half-ass — first login, zero submissions, no search results. These set the tone.</p>
+        <span class="count">5 scenarios</span>
+      </a>
+    </div>
+
+    <section class="palette">
+      <h2>Working palette</h2>
+      <div class="palette-grid">
+        <div class="swatch" style="background:#0a0e0a"><span class="label">bg</span><span class="hex">0a0e0a</span></div>
+        <div class="swatch" style="background:#141914"><span class="label">elevated</span><span class="hex">141914</span></div>
+        <div class="swatch" style="background:#1a221a"><span class="label">raised</span><span class="hex">1a221a</span></div>
+        <div class="swatch" style="background:#39ff14"><span class="label" style="color:#001000">neon</span><span class="hex" style="color:rgba(0,16,0,0.7)">39ff14</span></div>
+        <div class="swatch" style="background:#b026ff"><span class="label">purple</span><span class="hex">b026ff</span></div>
+        <div class="swatch" style="background:#ffd700"><span class="label" style="color:#1a1500">shipped</span><span class="hex" style="color:rgba(26,21,0,0.7)">ffd700</span></div>
+        <div class="swatch" style="background:#e8f5e8"><span class="label" style="color:#0a0e0a">text</span><span class="hex" style="color:rgba(10,14,10,0.7)">e8f5e8</span></div>
+        <div class="swatch" style="background:#8aa88a"><span class="label">muted</span><span class="hex">8aa88a</span></div>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <span>bf6-projects / design-mockups</span>
+      <span class="legend">
+        <span>Inter · JetBrains Mono · Space Grotesk</span>
+      </span>
+    </footer>
+  </main>
+</body>
+</html>
