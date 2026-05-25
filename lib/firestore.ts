@@ -47,8 +47,10 @@ function docToSuggestion(id: string, data: Record<string, unknown>): Suggestion 
     internalNotes:  String(data.internalNotes || ''),
     preview:        String(data.preview || makePreview(String(data.suggestion || ''))),
     title:          String(data.title || makeTitle(String(data.suggestion || ''))),
-    resolutionNote: data.resolutionNote != null ? String(data.resolutionNote) : undefined,
-    resolutionLink: data.resolutionLink != null ? String(data.resolutionLink) : undefined,
+    resolutionNote:  data.resolutionNote  != null ? String(data.resolutionNote)  : undefined,
+    resolutionLink:  data.resolutionLink  != null ? String(data.resolutionLink)  : undefined,
+    moderationState: (data.moderationState === 'flagged' ? 'flagged' : 'clean') as 'clean' | 'flagged',
+    moderationFlags: Array.isArray(data.moderationFlags) ? (data.moderationFlags as string[]) : [],
   }
 }
 

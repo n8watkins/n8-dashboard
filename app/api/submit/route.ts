@@ -5,6 +5,7 @@ import { makeTitle, makePreview } from '@/lib/utils'
 import { STATUS_OPTIONS, CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS } from '@/lib/config'
 import type { SubmitPayload } from '@/lib/types'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { checkProfanity } from '@/lib/moderation'
 import nodemailer from 'nodemailer'
 
 // ─── POST /api/submit ─────────────────────────────────────────────────────────
@@ -49,28 +50,39 @@ export async function POST(req: NextRequest) {
   const username = (body.username || '').trim()
   const extra    = (body.extra    || '').trim()
 
+  // Moderation check
+  const flagged         = checkProfanity(`${suggestion} ${body.why} ${extra}`)
+  const moderationState = flagged.length > 0 ? 'flagged' : 'clean'
+
   try {
     // Write to Firestore
     const docRef = await adminDb.collection('suggestions').add({
-      timestamp:     FieldValue.serverTimestamp(),
-      category:      category.trim(),
-      type:          type.trim(),
-      suggestion:    suggestion.trim(),
-      why:           why.trim(),
+      timestamp:        FieldValue.serverTimestamp(),
+      category:         category.trim(),
+      type:             type.trim(),
+      suggestion:       suggestion.trim(),
+      why:              why.trim(),
       username,
       extra,
-      source:        source.trim(),
-      status:        'New',
-      internalNotes: '',
-      preview:       makePreview(suggestion),
-      title:         makeTitle(suggestion),
+      source:           source.trim(),
+      status:           'New',
+      internalNotes:    '',
+      preview:          makePreview(suggestion),
+      title:            makeTitle(suggestion),
+      moderationState,
+      moderationFlags:  flagged,
     })
 
     // Send notifications (non-blocking — failures don't fail the request)
     sendEmailNotification(body, docRef.id).catch(err => {
       console.error('[email] Notification failed (submission still saved):', err)
     })
-    notifyDiscord(body, docRef.id).catch(err => {
+    if (flagged.length > 0) {
+      sendFlaggedNotification(body, docRef.id, flagged).catch(err => {
+        console.error('[email] Flagged notification failed:', err)
+      })
+    }
+    notifyDiscord(body, docRef.id, flagged.length > 0).catch(err => {
       console.error('[discord] Webhook failed (submission still saved):', err)
     })
 
@@ -83,7 +95,7 @@ export async function POST(req: NextRequest) {
 
 // ─── Discord webhook notification ────────────────────────────────────────────
 
-async function notifyDiscord(data: SubmitPayload, docId: string) {
+async function notifyDiscord(data: SubmitPayload, docId: string, isFlagged: boolean) {
   const url = process.env.DISCORD_WEBHOOK_URL
   if (!url) return
 
@@ -94,10 +106,10 @@ async function notifyDiscord(data: SubmitPayload, docId: string) {
       color:       0x4ade80,
       fields: [
         { name: 'Why',    value: data.why.slice(0, 300) },
-        { name: 'Source', value: data.source,              inline: true },
-        { name: 'From',   value: data.username || '(anon)', inline: true },
+        { name: 'Source', value: data.source,               inline: true },
+        { name: 'From',   value: data.username || '(anon)',  inline: true },
       ],
-      footer:    { text: `Doc: ${docId}` },
+      footer:    { text: `Doc: ${docId}${isFlagged ? ' · ⚠ flagged for admin review' : ''}` },
       timestamp: new Date().toISOString(),
     }],
   }
@@ -107,6 +119,36 @@ async function notifyDiscord(data: SubmitPayload, docId: string) {
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify(body),
   })
+}
+
+// ─── Flagged-content email ────────────────────────────────────────────────────
+
+async function sendFlaggedNotification(data: SubmitPayload, docId: string, flags: string[]) {
+  const pass = process.env.NOTIFY_EMAIL_PASS
+  const from = process.env.NOTIFY_EMAIL_FROM
+  const to   = process.env.NOTIFY_EMAIL_TO
+  if (!pass || !from || !to) return
+
+  const transport = nodemailer.createTransport({ service: 'gmail', auth: { user: from, pass } })
+
+  const subject = `[FLAGGED] New Suggestion: ${data.category} from ${data.source}`
+  const text = [
+    '⚠ This submission was flagged by the moderation filter.',
+    '',
+    `Matched terms: ${flags.join(', ')}`,
+    '',
+    `CATEGORY:\n${data.category}`,
+    `TYPE:\n${data.type}`,
+    `SUGGESTION:\n${data.suggestion}`,
+    `WHY IT WOULD HELP:\n${data.why}`,
+    `SOURCE:\n${data.source}`,
+    `FROM:\n${data.username || '(not provided)'}`,
+    '',
+    `Firestore doc ID: ${docId}`,
+    '— Sent from the Nasty N8 Suggestion Box',
+  ].join('\n\n')
+
+  await transport.sendMail({ from, to, subject, text })
 }
 
 // ─── Email notification ───────────────────────────────────────────────────────

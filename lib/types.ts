@@ -18,6 +18,8 @@ export interface SuggestionDoc {
   title: string    // first sentence, truncated to 58 chars
   resolutionNote?: string
   resolutionLink?: string
+  moderationState?: 'clean' | 'flagged'
+  moderationFlags?: string[]
 }
 
 // Client-side shape (id included, Timestamp as Date)
