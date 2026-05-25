@@ -9,6 +9,36 @@ import SuggestionDetail from './SuggestionDetail'
 
 type ViewGroup = 'all' | 'new' | 'active' | 'resolved'
 
+// ─── No-results empty state ───────────────────────────────────────────────────
+
+function NoResults({
+  viewGroup, category, type, source, status, search,
+  onClear,
+}: {
+  viewGroup: ViewGroup; category: string; type: string
+  source: string; status: string; search: string
+  onClear: () => void
+}) {
+  const active: string[] = []
+  if (viewGroup !== 'all') active.push(`group: ${viewGroup}`)
+  if (category) active.push(`category: ${category}`)
+  if (type)     active.push(`type: ${type}`)
+  if (source)   active.push(`source: ${source}`)
+  if (status)   active.push(`status: ${status}`)
+  if (search)   active.push(`search: "${search}"`)
+
+  return (
+    <div className="no-results" style={{ gridColumn: 'span 2' }}>
+      <div className="no-results-icon">?</div>
+      <h3>Nothing matched.</h3>
+      <p>Filters: {active.join(', ')}</p>
+      <div className="no-results-actions">
+        <button className="small-btn" onClick={onClear}>Clear all filters</button>
+      </div>
+    </div>
+  )
+}
+
 // ─── All Suggestions browser ──────────────────────────────────────────────────
 
 export default function SuggestionBrowser() {
@@ -61,6 +91,17 @@ export default function SuggestionBrowser() {
     setViewGroup(g)
     setStatus('')
   }
+
+  function clearFilters() {
+    setViewGroup('all')
+    setCategory('')
+    setType('')
+    setSource('')
+    setStatus('')
+    setSearch('')
+  }
+
+  const filtersApplied = viewGroup !== 'all' || !!category || !!type || !!source || !!status || !!search
 
   async function openSuggestion(id: string) {
     const s = await fetchSuggestion(id)
@@ -160,7 +201,13 @@ export default function SuggestionBrowser() {
             {loading
               ? <div className="empty-state" style={{ gridColumn: 'span 2' }}>Loading…</div>
               : suggestions.length === 0
-                ? <div className="empty-state" style={{ gridColumn: 'span 2' }}>No matching suggestions.</div>
+                ? filtersApplied
+                  ? <NoResults
+                      viewGroup={viewGroup} category={category} type={type}
+                      source={source} status={status} search={search}
+                      onClear={clearFilters}
+                    />
+                  : <div className="empty-state" style={{ gridColumn: 'span 2' }}>No suggestions yet.</div>
                 : suggestions.map(s => (
                   <div
                     key={s.id}
