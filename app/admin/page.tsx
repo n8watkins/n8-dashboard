@@ -8,6 +8,7 @@ import ReviewQueue        from '@/components/admin/ReviewQueue'
 import SuggestionBrowser  from '@/components/admin/SuggestionBrowser'
 import ActivityLog        from '@/components/admin/ActivityLog'
 import { Brand }          from '@/components/Brand'
+import SourceDashboard    from '@/components/admin/SourceDashboard'
 
 type Tab = 'queue' | 'browse' | 'log'
 
@@ -105,6 +106,8 @@ export default function AdminPage() {
           </button>
         </div>
       </div>
+
+      <SourceDashboard />
 
       <div className="tabs">
         <button className={`tab-btn${activeTab === 'queue'  ? ' active' : ''}`} onClick={() => setTab('queue')}>Review Queue</button>

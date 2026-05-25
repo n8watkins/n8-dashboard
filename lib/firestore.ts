@@ -285,6 +285,46 @@ export async function fetchStats(): Promise<Stats> {
   return calcStats(all)
 }
 
+// ─── Source breakdown ─────────────────────────────────────────────────────────
+
+export interface SourceStats {
+  all:    number
+  d7:     number
+  d30:    number
+  lastAt: Date | null
+}
+
+export async function fetchSourceBreakdown(): Promise<Record<string, SourceStats>> {
+  const snap = await getDocs(collection(db, 'suggestions'))
+  const now  = Date.now()
+  const ms7  = 7  * 24 * 60 * 60 * 1000
+  const ms30 = 30 * 24 * 60 * 60 * 1000
+
+  const result: Record<string, SourceStats> = {}
+
+  snap.docs.forEach(d => {
+    const data   = d.data() as Record<string, unknown>
+    const source = String(data.source || '')
+    if (!source) return
+
+    const ts   = data.timestamp as Timestamp | undefined
+    const date = ts?.toDate() ?? null
+    const ms   = date?.getTime() ?? 0
+
+    if (!result[source]) {
+      result[source] = { all: 0, d7: 0, d30: 0, lastAt: null }
+    }
+
+    const s = result[source]
+    s.all++
+    if (ms && now - ms <= ms7)  s.d7++
+    if (ms && now - ms <= ms30) s.d30++
+    if (date && (!s.lastAt || date > s.lastAt)) s.lastAt = date
+  })
+
+  return result
+}
+
 // ─── Activity log ─────────────────────────────────────────────────────────────
 
 export interface LogFilters {
