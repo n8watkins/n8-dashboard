@@ -9,8 +9,9 @@ import SuggestionBrowser  from '@/components/admin/SuggestionBrowser'
 import ActivityLog        from '@/components/admin/ActivityLog'
 import { Brand }          from '@/components/Brand'
 import SourceDashboard    from '@/components/admin/SourceDashboard'
+import SourceLinks        from '@/components/admin/SourceLinks'
 
-type Tab = 'queue' | 'browse' | 'log'
+type Tab = 'queue' | 'browse' | 'log' | 'links'
 
 // ─── Admin shell (auth gate + tab routing) ────────────────────────────────────
 
@@ -45,6 +46,10 @@ export default function AdminPage() {
   function setTab(tab: Tab) {
     router.push(tab === 'queue' ? '/admin' : `/admin?view=${tab}`)
   }
+
+  // ── Redirect unknown ?view values to queue ────────────────────────────────
+  const validTabs: Tab[] = ['queue', 'browse', 'log', 'links']
+  const safeTab: Tab = validTabs.includes(activeTab) ? activeTab : 'queue'
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (user === undefined) {
@@ -110,14 +115,16 @@ export default function AdminPage() {
       <SourceDashboard />
 
       <div className="tabs">
-        <button className={`tab-btn${activeTab === 'queue'  ? ' active' : ''}`} onClick={() => setTab('queue')}>Review Queue</button>
-        <button className={`tab-btn${activeTab === 'browse' ? ' active' : ''}`} onClick={() => setTab('browse')}>All Suggestions</button>
-        <button className={`tab-btn${activeTab === 'log'    ? ' active' : ''}`} onClick={() => setTab('log')}>Activity Log</button>
+        <button className={`tab-btn${safeTab === 'queue'  ? ' active' : ''}`} onClick={() => setTab('queue')}>Review Queue</button>
+        <button className={`tab-btn${safeTab === 'browse' ? ' active' : ''}`} onClick={() => setTab('browse')}>All Suggestions</button>
+        <button className={`tab-btn${safeTab === 'log'    ? ' active' : ''}`} onClick={() => setTab('log')}>Activity Log</button>
+        <button className={`tab-btn${safeTab === 'links'  ? ' active' : ''}`} onClick={() => setTab('links')}>Source Links</button>
       </div>
 
-      {activeTab === 'queue'  && <ReviewQueue />}
-      {activeTab === 'browse' && <SuggestionBrowser />}
-      {activeTab === 'log'    && <ActivityLog />}
+      {safeTab === 'queue'  && <ReviewQueue />}
+      {safeTab === 'browse' && <SuggestionBrowser />}
+      {safeTab === 'log'    && <ActivityLog />}
+      {safeTab === 'links'  && <div className="card"><SourceLinks /></div>}
     </div>
   )
 }
