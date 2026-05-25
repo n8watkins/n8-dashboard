@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import type { Suggestion, SaveReviewPayload } from '@/lib/types'
 import type { SuggestionStatus } from '@/lib/config'
 import { STATUS_OPTIONS, CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS } from '@/lib/config'
@@ -42,6 +43,9 @@ function NoResults({
 // ─── All Suggestions browser ──────────────────────────────────────────────────
 
 export default function SuggestionBrowser() {
+  const searchParams = useSearchParams()
+  const deepLinkId   = searchParams.get('id')   // e.g. from Discord/email notification link
+
   const [suggestions, setSuggestions]   = useState<Suggestion[]>([])
   const [totalMatches, setTotalMatches] = useState(0)
   const [stats, setStats]               = useState({ all: 0, new: 0, active: 0, resolved: 0 })
@@ -63,7 +67,8 @@ export default function SuggestionBrowser() {
   const [saving, setSaving]                   = useState(false)
   const [saveState, setSaveState]             = useState<'idle' | 'saved' | 'error'>('idle')
 
-  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchRef    = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const didAutoOpen  = useRef(false)
 
   const loadSuggestions = useCallback(async (overrides: Partial<BrowseFilters> = {}) => {
     setLoading(true)
@@ -82,6 +87,17 @@ export default function SuggestionBrowser() {
   }, [viewGroup, search, category, type, source, status])
 
   useEffect(() => { loadSuggestions() }, [loadSuggestions])
+
+  // Deep-link: auto-open ?id=<docId> from Discord / email notification links.
+  // Fetches the doc directly — doesn't depend on the list having loaded yet.
+  useEffect(() => {
+    if (deepLinkId && !didAutoOpen.current) {
+      didAutoOpen.current = true
+      openSuggestion(deepLinkId)
+    }
+  // openSuggestion is stable (no deps that change); deepLinkId comes from the URL and won't change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkId])
 
   // Debounced search
   function onSearchChange(val: string) {

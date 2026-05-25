@@ -112,15 +112,15 @@ export async function POST(req: NextRequest) {
     })
 
     // Send notifications (non-blocking — failures don't fail the request)
-    sendEmailNotification(body, docRef.id).catch(err => {
+    sendEmailNotification(req, body, docRef.id).catch(err => {
       console.error('[email] Notification failed (submission still saved):', err)
     })
     if (flagged.length > 0) {
-      sendFlaggedNotification(body, docRef.id, flagged).catch(err => {
+      sendFlaggedNotification(req, body, docRef.id, flagged).catch(err => {
         console.error('[email] Flagged notification failed:', err)
       })
     }
-    notifyDiscord(body, docRef.id, flagged.length > 0).catch(err => {
+    notifyDiscord(req, body, docRef.id, flagged.length > 0).catch(err => {
       console.error('[discord] Webhook failed (submission still saved):', err)
     })
 
@@ -131,23 +131,36 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// ─── Deep-link URL builder ────────────────────────────────────────────────────
+// Derives the admin review URL from the incoming request host — works in both
+// dev (localhost:3000/3001) and production without any extra env var.
+
+function adminLink(req: NextRequest, docId: string): string {
+  const host  = req.headers.get('host') || 'localhost:3000'
+  const proto = host.startsWith('localhost') ? 'http' : 'https'
+  return `${proto}://${host}/admin?view=browse&id=${docId}`
+}
+
 // ─── Discord webhook notification ────────────────────────────────────────────
 
-async function notifyDiscord(data: SubmitPayload, docId: string, isFlagged: boolean) {
+async function notifyDiscord(req: NextRequest, data: SubmitPayload, docId: string, isFlagged: boolean) {
   const url = process.env.DISCORD_WEBHOOK_URL
   if (!url) return
+
+  const reviewUrl = adminLink(req, docId)
 
   const body = {
     embeds: [{
       title:       `${data.category} — ${data.type}`,
+      url:         reviewUrl,   // makes the embed title a clickable link → opens that submission
       description: data.suggestion.slice(0, 400),
-      color:       0x4ade80,
+      color:       isFlagged ? 0xf87171 : 0x4ade80,
       fields: [
         { name: 'Why',    value: data.why.slice(0, 300) },
         { name: 'Source', value: data.source,               inline: true },
         { name: 'From',   value: data.username || '(anon)',  inline: true },
       ],
-      footer:    { text: `Doc: ${docId}${isFlagged ? ' · ⚠ flagged for admin review' : ''}` },
+      footer:    { text: `Review → ${reviewUrl}${isFlagged ? ' · ⚠ flagged' : ''}` },
       timestamp: new Date().toISOString(),
     }],
   }
@@ -161,15 +174,15 @@ async function notifyDiscord(data: SubmitPayload, docId: string, isFlagged: bool
 
 // ─── Flagged-content email ────────────────────────────────────────────────────
 
-async function sendFlaggedNotification(data: SubmitPayload, docId: string, flags: string[]) {
+async function sendFlaggedNotification(req: NextRequest, data: SubmitPayload, docId: string, flags: string[]) {
   const pass = process.env.NOTIFY_EMAIL_PASS
   const from = process.env.NOTIFY_EMAIL_FROM
   const to   = process.env.NOTIFY_EMAIL_TO
   if (!pass || !from || !to) return
 
-  const transport = nodemailer.createTransport({ service: 'gmail', auth: { user: from, pass } })
-
-  const subject = `[FLAGGED] New Suggestion: ${data.category} from ${data.source}`
+  const transport  = nodemailer.createTransport({ service: 'gmail', auth: { user: from, pass } })
+  const reviewUrl  = adminLink(req, docId)
+  const subject    = `[FLAGGED] New Suggestion: ${data.category} from ${data.source}`
   const text = [
     '⚠ This submission was flagged by the moderation filter.',
     '',
@@ -182,7 +195,7 @@ async function sendFlaggedNotification(data: SubmitPayload, docId: string, flags
     `SOURCE:\n${data.source}`,
     `FROM:\n${data.username || '(not provided)'}`,
     '',
-    `Firestore doc ID: ${docId}`,
+    `Review this submission:\n${reviewUrl}`,
     '— Sent from the Nasty N8 Suggestion Box',
   ].join('\n\n')
 
@@ -191,19 +204,16 @@ async function sendFlaggedNotification(data: SubmitPayload, docId: string, flags
 
 // ─── Email notification ───────────────────────────────────────────────────────
 
-async function sendEmailNotification(data: SubmitPayload, docId: string) {
+async function sendEmailNotification(req: NextRequest, data: SubmitPayload, docId: string) {
   const pass = process.env.NOTIFY_EMAIL_PASS
   const from = process.env.NOTIFY_EMAIL_FROM
   const to   = process.env.NOTIFY_EMAIL_TO
 
-  if (!pass || !from || !to) return // Email not configured — skip silently
+  if (!pass || !from || !to) return
 
-  const transport = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user: from, pass },
-  })
-
-  const subject = `New Suggestion: ${data.category} from ${data.source}`
+  const transport = nodemailer.createTransport({ service: 'gmail', auth: { user: from, pass } })
+  const reviewUrl = adminLink(req, docId)
+  const subject   = `New Suggestion: ${data.category} from ${data.source}`
 
   const text = [
     'A new Nasty N8 suggestion came in.',
@@ -216,7 +226,7 @@ async function sendEmailNotification(data: SubmitPayload, docId: string) {
     `ANYTHING ELSE:\n${data.extra || '—'}`,
     `SOURCE:\n${data.source}`,
     '',
-    `Firestore doc ID: ${docId}`,
+    `Review this submission:\n${reviewUrl}`,
     '— Sent from the Nasty N8 Suggestion Box',
   ].join('\n\n')
 
