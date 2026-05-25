@@ -27,7 +27,36 @@ export default function SourceDashboard() {
   })
 
   useEffect(() => {
-    fetchSourceBreakdown().then(setBreakdown)
+    const CACHE_KEY = 'source_breakdown'
+    const CACHE_TTL = 60_000 // 60 seconds
+
+    // Serve from cache if fresh
+    try {
+      const raw = localStorage.getItem(CACHE_KEY)
+      if (raw) {
+        const { data, ts } = JSON.parse(raw) as {
+          data: Record<string, { all: number; d7: number; d30: number; lastAt: number | null }>
+          ts: number
+        }
+        if (Date.now() - ts < CACHE_TTL) {
+          const rehydrated: Record<string, SourceStats> = Object.fromEntries(
+            Object.entries(data).map(([k, v]) => [k, { ...v, lastAt: v.lastAt ? new Date(v.lastAt) : null }])
+          )
+          setBreakdown(rehydrated)
+          return
+        }
+      }
+    } catch { /* stale or corrupt — fall through to fetch */ }
+
+    fetchSourceBreakdown().then(data => {
+      setBreakdown(data)
+      try {
+        const serialized = Object.fromEntries(
+          Object.entries(data).map(([k, v]) => [k, { ...v, lastAt: v.lastAt?.getTime() ?? null }])
+        )
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ data: serialized, ts: Date.now() }))
+      } catch { /* localStorage unavailable */ }
+    })
   }, [])
 
   function toggle() {

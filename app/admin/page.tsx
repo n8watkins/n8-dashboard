@@ -22,9 +22,13 @@ export default function AdminPage() {
   const [signingIn, setSigningIn] = useState(false)
   const [flaggedCount, setFlaggedCount] = useState(0)
 
-  const router      = useRouter()
+  const router       = useRouter()
   const searchParams = useSearchParams()
-  const activeTab   = (searchParams.get('view') as Tab) || 'queue'
+  const activeTab    = (searchParams.get('view') as Tab) || 'queue'
+
+  // Tracks which tabs have been mounted at least once; once mounted, they stay
+  // alive (CSS show/hide) so switching back doesn't trigger a re-fetch.
+  const [mountedTabs, setMountedTabs] = useState<Set<Tab>>(() => new Set([activeTab]))
 
   // Listen for auth state
   useEffect(() => {
@@ -53,6 +57,7 @@ export default function AdminPage() {
   }
 
   function setTab(tab: Tab) {
+    setMountedTabs(prev => new Set([...prev, tab]))
     router.push(tab === 'queue' ? '/admin' : `/admin?view=${tab}`)
   }
 
@@ -135,10 +140,10 @@ export default function AdminPage() {
         <button className={`tab-btn${safeTab === 'links'  ? ' active' : ''}`} onClick={() => setTab('links')}>Source Links</button>
       </div>
 
-      {safeTab === 'queue'  && <ReviewQueue />}
-      {safeTab === 'browse' && <SuggestionBrowser />}
-      {safeTab === 'log'    && <ActivityLog />}
-      {safeTab === 'links'  && <div className="card"><SourceLinks /></div>}
+      {mountedTabs.has('queue')  && <div style={{ display: safeTab === 'queue'  ? 'block' : 'none' }}><ReviewQueue /></div>}
+      {mountedTabs.has('browse') && <div style={{ display: safeTab === 'browse' ? 'block' : 'none' }}><SuggestionBrowser /></div>}
+      {mountedTabs.has('log')    && <div style={{ display: safeTab === 'log'    ? 'block' : 'none' }}><ActivityLog /></div>}
+      {mountedTabs.has('links')  && <div style={{ display: safeTab === 'links'  ? 'block' : 'none' }}><div className="card"><SourceLinks /></div></div>}
     </div>
   )
 }
