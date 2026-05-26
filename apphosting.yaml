@@ -1,0 +1,84 @@
+# ─── Firebase App Hosting configuration ──────────────────────────────────────
+# Docs: https://firebase.google.com/docs/app-hosting/configure
+
+runConfig:
+  # Keep at 0 for hobby/low-traffic — cold starts are fine, no idle cost.
+  minInstances: 0
+  maxInstances: 2
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+
+env:
+  # ── Firebase Client SDK (public) ──────────────────────────────────────────
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyBi2i1MtvOWq6a2B0RUkU9jPjYRoeu_Tms
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: nasty-n8-suggestion-box.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: nasty-n8-suggestion-box
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: nasty-n8-suggestion-box.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "988704383983"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:988704383983:web:1898b8a52012c14a8e8c1a
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # ── Firebase Admin SDK (private — served via Secret Manager) ─────────────
+  - variable: FIREBASE_ADMIN_PROJECT_ID
+    value: nasty-n8-suggestion-box
+    availability:
+      - RUNTIME
+  - variable: FIREBASE_ADMIN_CLIENT_EMAIL
+    value: firebase-adminsdk-fbsvc@nasty-n8-suggestion-box.iam.gserviceaccount.com
+    availability:
+      - RUNTIME
+  - variable: FIREBASE_ADMIN_PRIVATE_KEY
+    secret: firebase-admin-private-key   # create in Secret Manager (see README)
+    availability:
+      - RUNTIME
+
+  # ── Notifications (private — served via Secret Manager) ──────────────────
+  - variable: NOTIFY_EMAIL_TO
+    value: nastyn8plays@gmail.com
+    availability:
+      - RUNTIME
+  - variable: NOTIFY_EMAIL_FROM
+    value: nastyn8plays@gmail.com
+    availability:
+      - RUNTIME
+  - variable: NOTIFY_EMAIL_PASS
+    secret: notify-email-pass            # create in Secret Manager
+    availability:
+      - RUNTIME
+  - variable: DISCORD_WEBHOOK_URL
+    secret: discord-webhook-url          # create in Secret Manager
+    availability:
+      - RUNTIME
+
+  # ── Site URL — set this AFTER first deploy once you have the App Hosting URL ─
+  # Example: https://nasty-n8-suggestion-box--default.web.app
+  # This ensures Discord/email deep-links point to the live domain, not an
+  # internal Cloud Run hostname.
+  # - variable: SITE_URL
+  #   value: https://your-app-hosting-url.web.app
+  #   availability:
+  #     - RUNTIME
