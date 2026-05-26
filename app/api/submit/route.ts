@@ -132,13 +132,34 @@ export async function POST(req: NextRequest) {
 }
 
 // ─── Deep-link URL builder ────────────────────────────────────────────────────
-// Derives the admin review URL from the incoming request host — works in both
-// dev (localhost:3000/3001) and production without any extra env var.
+// Priority:
+//   1. SITE_URL env var — set this in production to guarantee correct links
+//      (e.g. https://suggestion-box.example.com). Avoids header-spoofing risk
+//      and works correctly behind App Hosting / Cloud Run reverse proxies where
+//      X-Forwarded-Host may carry an internal hostname.
+//   2. X-Forwarded-Host — set by most reverse proxies; preferred over Host when
+//      SITE_URL is absent.
+//   3. Host — fallback for local dev (localhost:3000 / :3001).
+//
+// NOTE: Discord deep-link URLs in local dev will point to localhost and only
+// work if you have the dev server running. In production set SITE_URL.
 
 function adminLink(req: NextRequest, docId: string): string {
-  const host  = req.headers.get('host') || 'localhost:3000'
-  const proto = host.startsWith('localhost') ? 'http' : 'https'
-  return `${proto}://${host}/admin?view=browse&id=${docId}`
+  const safeId = encodeURIComponent(docId)
+
+  // Env-var override — always wins, no spoofing risk
+  const siteUrl = process.env.SITE_URL
+  if (siteUrl) {
+    return `${siteUrl.replace(/\/$/, '')}/admin?view=browse&id=${safeId}`
+  }
+
+  // Proxy header (Cloud Run, Vercel, nginx) — prefer over Host
+  const forwarded = req.headers.get('x-forwarded-host')
+  const host      = (forwarded ? forwarded.split(',')[0].trim() : null)
+                    || req.headers.get('host')
+                    || 'localhost:3000'
+  const proto     = host.startsWith('localhost') ? 'http' : 'https'
+  return `${proto}://${host}/admin?view=browse&id=${safeId}`
 }
 
 // ─── Discord webhook notification ────────────────────────────────────────────
@@ -196,6 +217,7 @@ async function sendFlaggedNotification(req: NextRequest, data: SubmitPayload, do
     `FROM:\n${data.username || '(not provided)'}`,
     '',
     `Review this submission:\n${reviewUrl}`,
+    `Submission ID: ${docId}`,
     '— Sent from the Nasty N8 Suggestion Box',
   ].join('\n\n')
 
@@ -227,6 +249,7 @@ async function sendEmailNotification(req: NextRequest, data: SubmitPayload, docI
     `SOURCE:\n${data.source}`,
     '',
     `Review this submission:\n${reviewUrl}`,
+    `Submission ID: ${docId}`,
     '— Sent from the Nasty N8 Suggestion Box',
   ].join('\n\n')
 

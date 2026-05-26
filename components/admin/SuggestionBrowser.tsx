@@ -60,6 +60,7 @@ export default function SuggestionBrowser() {
   const [flaggedOnly, setFlaggedOnly]   = useState(false)
 
   const [selected, setSelected]         = useState<Suggestion | null>(null)
+  const [notFound, setNotFound]         = useState(false)
   const [selectedStatus, setSelectedStatus]   = useState<SuggestionStatus>('New')
   const [selectedNotes, setSelectedNotes]     = useState('')
   const [selectedResNote, setSelectedResNote] = useState('')
@@ -67,8 +68,8 @@ export default function SuggestionBrowser() {
   const [saving, setSaving]                   = useState(false)
   const [saveState, setSaveState]             = useState<'idle' | 'saved' | 'error'>('idle')
 
-  const searchRef    = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const didAutoOpen  = useRef(false)
+  const searchRef       = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastAutoOpened  = useRef<string | null>(null)  // tracks last deep-linked id
 
   const loadSuggestions = useCallback(async (overrides: Partial<BrowseFilters> = {}) => {
     setLoading(true)
@@ -90,12 +91,15 @@ export default function SuggestionBrowser() {
 
   // Deep-link: auto-open ?id=<docId> from Discord / email notification links.
   // Fetches the doc directly — doesn't depend on the list having loaded yet.
+  // Uses lastAutoOpened ref so each unique id in the URL is only auto-opened once,
+  // but a new notification link (different id) still opens correctly in the same session.
   useEffect(() => {
-    if (deepLinkId && !didAutoOpen.current) {
-      didAutoOpen.current = true
+    if (deepLinkId && deepLinkId !== lastAutoOpened.current) {
+      lastAutoOpened.current = deepLinkId
       openSuggestion(deepLinkId)
     }
-  // openSuggestion is stable (no deps that change); deepLinkId comes from the URL and won't change
+  // openSuggestion is defined above and stable within this render;
+  // deepLinkId is the only reactive value we need to track here.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deepLinkId])
 
@@ -129,8 +133,17 @@ export default function SuggestionBrowser() {
     : suggestions
 
   async function openSuggestion(id: string) {
+    // Guard against empty or obviously invalid ids (e.g. URL-injection attempts)
+    if (!id || id.includes('/') || id.length > 128) return
+
     const s = await fetchSuggestion(id)
-    if (!s) return
+    if (!s) {
+      // Doc not found — clear selection so the detail panel shows the not-found message
+      setSelected(null)
+      setNotFound(true)
+      return
+    }
+    setNotFound(false)
     setSelected(s)
     setSelectedStatus(s.status)
     setSelectedNotes(s.internalNotes)
@@ -280,7 +293,11 @@ export default function SuggestionBrowser() {
       <div>
         <div className="card detail-card">
           {!selected
-            ? <div className="empty-state">Select a suggestion to view or edit it.</div>
+            ? <div className="empty-state">
+                {notFound
+                  ? '⚠ Submission not found — it may have been deleted or the link is invalid.'
+                  : 'Select a suggestion to view or edit it.'}
+              </div>
             : <>
               <SuggestionDetail item={selected} title="Suggestion Detail" />
 
