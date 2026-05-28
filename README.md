@@ -1,6 +1,9 @@
-# Nasty N8 Suggestion Box
+# Nasty N8 Dashboard
 
-Next.js + Firebase rewrite of the Google Forms/Sheets suggestion system.
+Next.js + Firebase community dashboard for Nasty N8. The first (and currently
+main) section is the **Suggestion Box** — a rewrite of the Google Forms/Sheets
+suggestion system. Coaching is planned as a second section (see the v4 direction
+in `design-mockups/plan.html`).
 
 ## What it is
 

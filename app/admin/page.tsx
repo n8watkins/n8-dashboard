@@ -92,7 +92,7 @@ function AdminInner() {
       <div className="auth-shell">
         <div className="auth-card">
           <h1>Nasty N8</h1>
-          <p className="auth-subtitle">Suggestion Review — Admin only</p>
+          <p className="auth-subtitle">Dashboard — Admin only</p>
           <button className="google-btn" onClick={handleSignIn} disabled={signingIn}>
             <GoogleIcon />
             {signingIn ? 'Signing in…' : 'Sign in with Google'}

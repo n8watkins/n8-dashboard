@@ -26,8 +26,8 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Nasty N8 Suggestion Box',
-  description: 'Submit suggestions for the Nasty N8 community.',
+  title: 'Nasty N8 Dashboard',
+  description: 'Nasty N8 community dashboard — submit suggestions and more.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
