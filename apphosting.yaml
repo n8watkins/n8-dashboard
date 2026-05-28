@@ -12,43 +12,43 @@ runConfig:
 env:
   # ── Firebase Client SDK (public) ──────────────────────────────────────────
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyBi2i1MtvOWq6a2B0RUkU9jPjYRoeu_Tms
+    value: AIzaSyAkbT2wuHj7agnwAEavcV3cDsiTKkyKXEs
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    value: nasty-n8-suggestion-box.firebaseapp.com
+    value: nasty-n8-dashboard.firebaseapp.com
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    value: nasty-n8-suggestion-box
+    value: nasty-n8-dashboard
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    value: nasty-n8-suggestion-box.firebasestorage.app
+    value: nasty-n8-dashboard.firebasestorage.app
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-    value: "988704383983"
+    value: "945340689456"
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: 1:988704383983:web:1898b8a52012c14a8e8c1a
+    value: 1:945340689456:web:54e599aac9af7e370151f5
     availability:
       - BUILD
       - RUNTIME
 
   # ── Firebase Admin SDK (private — served via Secret Manager) ─────────────
   - variable: FIREBASE_ADMIN_PROJECT_ID
-    value: nasty-n8-suggestion-box
+    value: nasty-n8-dashboard
     availability:
       - RUNTIME
   - variable: FIREBASE_ADMIN_CLIENT_EMAIL
-    value: firebase-adminsdk-fbsvc@nasty-n8-suggestion-box.iam.gserviceaccount.com
+    value: firebase-adminsdk-fbsvc@nasty-n8-dashboard.iam.gserviceaccount.com
     availability:
       - RUNTIME
   - variable: FIREBASE_ADMIN_PRIVATE_KEY
@@ -74,8 +74,35 @@ env:
     availability:
       - RUNTIME
 
+  # ── reCAPTCHA v3 (v2.6) — ENABLE AS A PAIR ───────────────────────────────
+  # reCAPTCHA is all-or-nothing: the public site key (inlined at BUILD) and the
+  # server secret must both be real and present, or both absent. Half-enabling
+  # breaks the live form (client sends no/invalid token, server rejects every
+  # submit). Until then, honeypot + IP rate-limit + length checks guard the form.
+  # To activate: create the v3 key at google.com/recaptcha/admin/create (add your
+  # App Hosting domain + localhost), create the recaptcha-secret-key secret, then
+  # uncomment BOTH entries below and set the real site key value.
+  # - variable: NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+  #   value: your-recaptcha-v3-site-key
+  #   availability:
+  #     - BUILD
+  #     - RUNTIME
+  # - variable: RECAPTCHA_SECRET_KEY
+  #   secret: recaptcha-secret-key
+  #   availability:
+  #     - RUNTIME
+
+  # ── Weekly recap cron auth (Cloud Scheduler Bearer token) ────────────────
+  # Admin UI button works without this; only the cron/Bearer path needs it.
+  # Referenced secret must exist in Secret Manager before deploy, or the
+  # rollout fails. Create with: firebase apphosting:secrets:set recap-secret
+  - variable: RECAP_SECRET
+    secret: recap-secret
+    availability:
+      - RUNTIME
+
   # ── Site URL — set this AFTER first deploy once you have the App Hosting URL ─
-  # Example: https://nasty-n8-suggestion-box--default.web.app
+  # Example: https://nasty-n8-dashboard--default.web.app
   # This ensures Discord/email deep-links point to the live domain, not an
   # internal Cloud Run hostname.
   # - variable: SITE_URL

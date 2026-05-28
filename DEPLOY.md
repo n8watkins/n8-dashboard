@@ -1,9 +1,9 @@
 # Deployment — Next Steps
 
-**Project:** Nasty N8 Suggestion Box  
+**Project:** Nasty N8 Dashboard  
 **Host:** Firebase App Hosting (Next.js SSR + API routes)  
 **Repo:** https://github.com/n8watkins/nasty-n8-suggestion-box  
-**Firebase project:** `nasty-n8-suggestion-box`
+**Firebase project:** `nasty-n8-dashboard`
 
 ---
 
@@ -26,7 +26,7 @@
 
 Required for App Hosting and Secret Manager. Effectively free at hobby traffic levels.
 
-👉 https://console.firebase.google.com/project/nasty-n8-suggestion-box/usage/details
+👉 https://console.firebase.google.com/project/nasty-n8-dashboard/usage/details
 
 ---
 
@@ -40,16 +40,16 @@ cd /home/natkins/projects/bf6-projects/suggestion-box
 # 1. Firebase Admin private key
 PRIVATE_KEY=$(grep FIREBASE_ADMIN_PRIVATE_KEY .env.local | cut -d'"' -f2)
 echo -n "$PRIVATE_KEY" | firebase apphosting:secrets:set firebase-admin-private-key \
-  --project nasty-n8-suggestion-box --data-file=-
+  --project nasty-n8-dashboard --data-file=-
 
 # 2. Discord webhook URL
 DISCORD=$(grep DISCORD_WEBHOOK_URL .env.local | cut -d'=' -f2-)
 echo -n "$DISCORD" | firebase apphosting:secrets:set discord-webhook-url \
-  --project nasty-n8-suggestion-box --data-file=-
+  --project nasty-n8-dashboard --data-file=-
 
 # 3. Gmail app password (empty for now — fill in when you set up Gmail)
 echo -n "" | firebase apphosting:secrets:set notify-email-pass \
-  --project nasty-n8-suggestion-box --data-file=-
+  --project nasty-n8-dashboard --data-file=-
 ```
 
 When prompted whether to grant the App Hosting service account access: **Yes**.
@@ -58,7 +58,7 @@ When prompted whether to grant the App Hosting service account access: **Yes**.
 
 ## Step 3 — Create the App Hosting backend (Firebase Console)
 
-1. Go to: https://console.firebase.google.com/project/nasty-n8-suggestion-box/apphosting
+1. Go to: https://console.firebase.google.com/project/nasty-n8-dashboard/apphosting
 2. Click **Get started**
 3. Connect GitHub → pick **n8watkins/nasty-n8-suggestion-box**
 4. Branch: **master**
@@ -73,14 +73,14 @@ Firebase will trigger the first build automatically. Wait ~3–5 minutes.
 
 After the build finishes you'll get a URL like:
 ```
-https://nasty-n8-suggestion-box--default.web.app
+https://nasty-n8-dashboard--default.web.app
 ```
 
 Open `apphosting.yaml` and uncomment + fill in the `SITE_URL` block at the bottom:
 
 ```yaml
   - variable: SITE_URL
-    value: https://nasty-n8-suggestion-box--default.web.app
+    value: https://nasty-n8-dashboard--default.web.app
     availability:
       - RUNTIME
 ```
@@ -99,7 +99,7 @@ git push
 
 ```bash
 cd /home/natkins/projects/bf6-projects/suggestion-box
-firebase deploy --only firestore --project nasty-n8-suggestion-box
+firebase deploy --only firestore --project nasty-n8-dashboard
 ```
 
 ---
@@ -121,7 +121,7 @@ Every `git push` to `master` triggers an automatic rebuild. No manual steps need
 To update a secret:
 ```bash
 echo -n "new-value" | firebase apphosting:secrets:set <secret-name> \
-  --project nasty-n8-suggestion-box --data-file=-
+  --project nasty-n8-dashboard --data-file=-
 ```
 
 ---

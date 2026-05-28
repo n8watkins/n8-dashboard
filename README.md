@@ -24,7 +24,7 @@ Next.js + Firebase rewrite of the Google Forms/Sheets suggestion system.
 ### 1. Create a Firebase project
 
 1. Go to [console.firebase.google.com](https://console.firebase.google.com)
-2. **Create project** → name it `nasty-n8-suggestion-box` (or whatever)
+2. **Create project** → name it `nasty-n8-dashboard` (or whatever)
 3. **Build → Firestore Database** → Create database → Start in **production mode** → pick a region
 4. **Build → Authentication** → Get started → **Google** provider → Enable it → Save
 5. **Project Settings** → **Your apps** → Add app → Web → Register → copy the `firebaseConfig` object

@@ -66,6 +66,7 @@
     .badge.done { background: rgba(74,222,128,0.18); color: #86efac; }
     .badge.v2 { background: rgba(255,215,0,0.12); color: var(--status-shipped); }
     .badge.v3 { background: rgba(255, 68, 68, 0.10); color: var(--danger); }
+    .badge.v4 { background: rgba(96, 165, 250, 0.12); color: var(--blue, #60a5fa); }
 
     .plan-main { min-width: 0; }
 
@@ -496,6 +497,7 @@
         <div class="toc-label">Future preview</div>
         <a href="#v2-preview" class="toc-link">v2 integrations <span class="badge v2">v2</span></a>
         <a href="#v3-preview" class="toc-link">v3 AI + voice <span class="badge v3">v3</span></a>
+        <a href="#dashboard-coaching" class="toc-link">Dashboard + coaching <span class="badge v4">v4</span></a>
       </div>
       <div class="toc-group">
         <div class="toc-label">Reference</div>
@@ -1977,6 +1979,90 @@ env:
           <li><strong>AI moderation</strong> layered on top of regex from FU-01</li>
           <li><strong>Voice transcript moderation</strong></li>
         </ul>
+      </section>
+
+      <!-- ===================================================
+           DASHBOARD + COACHING (v4 direction)
+           =================================================== -->
+      <section class="plan-section" id="dashboard-coaching">
+        <div class="plan-section-head">
+          <span class="num">C4</span>
+          <h2>Dashboard expansion: coaching <span class="badge v4">v4</span></h2>
+          <span class="meta">direction only · do not start until suggestion box is deployed and stable</span>
+        </div>
+        <p class="plan-prose">
+          The product grows from a single-purpose suggestion box into <strong>Nasty N8 Dashboard</strong> — one
+          app, one sign-in, with multiple intake domains. Coaching is the second domain: it consolidates what is
+          currently a separate Google Sheets workflow. This section captures the agreed direction so it isn't lost;
+          it is <em>not</em> an executable task list yet. A full task breakdown (with IDs, file lists, acceptance
+          criteria) gets written when this phase starts.
+        </p>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text);">Settled direction</h3>
+        <ul class="plan-prose">
+          <li><strong>One project, not two.</strong> Same Firebase/Cloud project, same auth allow-list, same brand,
+            same notification plumbing. Coaching is a second Firestore collection alongside <code>suggestions</code>,
+            not a separate app or separate GCP project.</li>
+          <li><strong>Product is "Nasty N8 Dashboard."</strong> The Firebase project was recreated as
+            <code>nasty-n8-dashboard</code> pre-launch (clean — no data to migrate, nothing deployed yet).
+            Remaining rename touch-ups in code: <code>package.json</code> name, README, and the
+            <code>Brand</code> subtitle.</li>
+          <li><strong>Admin becomes multi-section.</strong> One auth gate, then a section switcher: Suggestions
+            (existing) and Coaching (new). Each section keeps its own tabs (queue / browse / log).</li>
+          <li><strong>Reuse before abstracting.</strong> Coaching reuses the auth gate, admin shell, status-pill
+            system, and submit→Firestore→notify pipeline. Start by duplicating the triage components for coaching;
+            extract a shared base only once real differences are visible (per the "three similar lines beats a
+            premature abstraction" convention).</li>
+        </ul>
+
+        <h3 style="font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:10px;margin-top:20px;color:var(--text);">Shape of the work</h3>
+        <table class="spec-table">
+          <thead><tr><th>area</th><th>what</th><th>size</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="name">Product rename</td>
+              <td>Nasty N8 Suggestion Box → Nasty N8 Dashboard (name, README, brand subtitle).</td>
+              <td>small</td>
+            </tr>
+            <tr>
+              <td class="name">Admin section nav</td>
+              <td>Section switcher above the existing tab bar; route as <code>/admin?section=suggestions|coaching</code>.</td>
+              <td>small</td>
+            </tr>
+            <tr>
+              <td class="name">Coaching data model</td>
+              <td>New <code>coaching_requests</code> collection. Several coaching forms feed it via a
+                <code>formType</code> discriminator (e.g. <code>1on1</code>, <code>vod-review</code>,
+                <code>sweat-lab</code>) — one collection, filtered in the admin like the existing source filter.
+                Separate collections only if a form is a genuinely different workflow.</td>
+              <td>medium</td>
+            </tr>
+            <tr>
+              <td class="name">Coaching forms</td>
+              <td>Several public forms under <code>/coaching/&lt;form&gt;</code>. Still capture source/origin (you
+                do care where requests come from), plus coaching-specific fields per form.</td>
+              <td>medium</td>
+            </tr>
+            <tr>
+              <td class="name">Coaching triage UI</td>
+              <td>Queue / browser / activity log for coaching, mirroring the suggestion components.</td>
+              <td>medium</td>
+            </tr>
+            <tr>
+              <td class="name">Automations</td>
+              <td>The largest new surface: outbound coaching automations (confirmations, scheduling links,
+                status-change follow-ups). Reuses the email/Discord helpers but adds new triggers and templates.</td>
+              <td>large</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="plan-prose" style="font-size:12px;">
+          <em>Open questions for when this phase starts: exact list of coaching forms and their fields; which
+          automations are confirmation-only vs. scheduling; whether any coaching request needs a public status
+          page for the requester (suggestions are admin-only intake — coaching may differ since there's a named
+          requester).</em>
+        </p>
       </section>
 
       <!-- ===================================================
