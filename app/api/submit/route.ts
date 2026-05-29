@@ -180,8 +180,9 @@ async function notifyDiscord(req: NextRequest, data: SubmitPayload, docId: strin
         { name: 'Why',    value: data.why.slice(0, 300) },
         { name: 'Source', value: data.source,               inline: true },
         { name: 'From',   value: data.username || '(anon)',  inline: true },
+        { name: 'Review', value: `[Open submission](${reviewUrl})` },
       ],
-      footer:    { text: `Review → ${reviewUrl}${isFlagged ? ' · ⚠ flagged' : ''}` },
+      footer:    { text: isFlagged ? '⚠ flagged' : 'Nasty N8 Dashboard' },
       timestamp: new Date().toISOString(),
     }],
   }
