@@ -65,10 +65,13 @@ env:
     value: nastyn8plays@gmail.com
     availability:
       - RUNTIME
-  - variable: NOTIFY_EMAIL_PASS
-    secret: notify-email-pass            # create in Secret Manager
-    availability:
-      - RUNTIME
+  # NOTIFY_EMAIL_PASS deferred — email off at launch (Discord covers alerts; the
+  # submit route skips email when the password is absent). To enable: create the
+  # notify-email-pass secret with a Gmail app password, then uncomment this block.
+  # - variable: NOTIFY_EMAIL_PASS
+  #   secret: notify-email-pass
+  #   availability:
+  #     - RUNTIME
   - variable: DISCORD_WEBHOOK_URL
     secret: discord-webhook-url          # create in Secret Manager
     availability:
