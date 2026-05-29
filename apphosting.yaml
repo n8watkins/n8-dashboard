@@ -104,11 +104,8 @@ env:
     availability:
       - RUNTIME
 
-  # ── Site URL — set this AFTER first deploy once you have the App Hosting URL ─
-  # Example: https://nasty-n8-dashboard--default.web.app
-  # This ensures Discord/email deep-links point to the live domain, not an
-  # internal Cloud Run hostname.
-  # - variable: SITE_URL
-  #   value: https://your-app-hosting-url.web.app
-  #   availability:
-  #     - RUNTIME
+  # ── Site URL — ensures Discord/email deep-links point to the live domain ─────
+  - variable: SITE_URL
+    value: https://nasty-n8-dashboard--nasty-n8-dashboard.us-east4.hosted.app
+    availability:
+      - RUNTIME
