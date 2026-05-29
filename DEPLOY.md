@@ -2,7 +2,7 @@
 
 **Project:** Nasty N8 Dashboard  
 **Host:** Firebase App Hosting (Next.js SSR + API routes)  
-**Repo:** https://github.com/n8watkins/nasty-n8-suggestion-box  
+**Repo:** https://github.com/n8watkins/nasty-n8-dashboard  
 **Firebase project:** `nasty-n8-dashboard`
 
 ---
@@ -60,7 +60,7 @@ When prompted whether to grant the App Hosting service account access: **Yes**.
 
 1. Go to: https://console.firebase.google.com/project/nasty-n8-dashboard/apphosting
 2. Click **Get started**
-3. Connect GitHub → pick **n8watkins/nasty-n8-suggestion-box**
+3. Connect GitHub → pick **n8watkins/nasty-n8-dashboard**
 4. Branch: **master**
 5. Root directory: `/` (default)
 6. Click **Finish and deploy**
