@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
+import { getAdminDb } from '@/lib/firebase-admin'
 import { FieldValue } from 'firebase-admin/firestore'
 import { makeTitle, makePreview } from '@/lib/utils'
 import { CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, FIELD_LIMITS } from '@/lib/config'
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Write to Firestore
-    const docRef = await adminDb.collection('suggestions').add({
+    const docRef = await getAdminDb().collection('suggestions').add({
       timestamp:        FieldValue.serverTimestamp(),
       category:         category.trim(),
       type:             type.trim(),

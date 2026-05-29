@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { FieldValue } from 'firebase-admin/firestore'
-import { adminDb } from './firebase-admin'
+import { getAdminDb } from './firebase-admin'
 
 // ─── IP-based rate limiting (Firestore-backed) ────────────────────────────────
 
@@ -15,7 +15,7 @@ function hashIp(ip: string): string {
 
 export async function checkRateLimit(ip: string): Promise<{ ok: boolean; resetIn?: number }> {
   const key  = hashIp(ip)
-  const ref  = adminDb.collection('rate_limit').doc(key)
+  const ref  = getAdminDb().collection('rate_limit').doc(key)
   const snap = await ref.get()
 
   const now        = Date.now()

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
+import { getAdminDb } from '@/lib/firebase-admin'
 import { getAuth } from 'firebase-admin/auth'
 import { Timestamp } from 'firebase-admin/firestore'
 import { ADMIN_EMAILS, SOURCE_OPTIONS } from '@/lib/config'
@@ -76,7 +76,7 @@ async function buildRecapStats(): Promise<RecapStats> {
   // FIX #3: query only this week's documents instead of a full collection scan.
   // Single-field timestamp index is auto-created by Firestore.
   type SugData = Record<string, unknown>
-  const weekSnap = await adminDb
+  const weekSnap = await getAdminDb()
     .collection('suggestions')
     .where('timestamp', '>=', weekAgoTs)
     .get()
@@ -103,9 +103,9 @@ async function buildRecapStats(): Promise<RecapStats> {
 
   // FIX #3 cont.: use count() aggregation for pipeline numbers — reads no documents.
   const [newCount, activeCount, doneCount] = await Promise.all([
-    adminDb.collection('suggestions').where('status', '==', 'New').count().get(),
-    adminDb.collection('suggestions').where('status', '==', 'Active').count().get(),
-    adminDb.collection('suggestions').where('status', '==', 'Done').count().get(),
+    getAdminDb().collection('suggestions').where('status', '==', 'New').count().get(),
+    getAdminDb().collection('suggestions').where('status', '==', 'Active').count().get(),
+    getAdminDb().collection('suggestions').where('status', '==', 'Done').count().get(),
   ])
   const queueSize   = newCount.data().count
   const activeSize  = activeCount.data().count
@@ -113,7 +113,7 @@ async function buildRecapStats(): Promise<RecapStats> {
 
   // ── Activity log — this week ──────────────────────────────────────────────────
   type LogData = Record<string, unknown>
-  const logSnap = await adminDb
+  const logSnap = await getAdminDb()
     .collection('activity_log')
     .where('timestamp', '>=', weekAgoTs)
     .get()
