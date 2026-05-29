@@ -50,6 +50,11 @@ echo -n "$DISCORD" | firebase apphosting:secrets:set discord-webhook-url \
 # 3. Gmail app password (empty for now — fill in when you set up Gmail)
 echo -n "" | firebase apphosting:secrets:set notify-email-pass \
   --project nasty-n8-dashboard --data-file=-
+
+# 4. Weekly recap cron secret
+RECAP=$(grep '^RECAP_SECRET=' .env.local | cut -d'=' -f2-)
+echo -n "$RECAP" | firebase apphosting:secrets:set recap-secret \
+  --project nasty-n8-dashboard --data-file=-
 ```
 
 When prompted whether to grant the App Hosting service account access: **Yes**.
