@@ -3,7 +3,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, FIELD_LIMITS } from '@/lib/config'
 
-// ─── reCAPTCHA v3 type (keys wired in v2.6) ───────────────────────────────────
+// ─── reCAPTCHA v3 type ────────────────────────────────────────────────────────
 declare global {
   interface Window {
     grecaptcha?: {
@@ -45,7 +45,7 @@ function SuggestionFormInner() {
   const [status,   setStatus]   = useState<'idle' | 'submitting' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
-  // Load reCAPTCHA v3 script if the site key is configured (inactive until v2.6)
+  // Load reCAPTCHA v3 script if the site key is configured
   useEffect(() => {
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
     if (!siteKey || document.querySelector('[data-recaptcha]')) return
@@ -64,17 +64,15 @@ function SuggestionFormInner() {
     setTouched(prev => new Set([...prev, key]))
   }
 
-  // Client-side validation — mirrors the server's FIELD_LIMITS checks
   function validate(f: typeof fields): Record<string, string> {
     const errs: Record<string, string> = {}
     if (!f.category) errs.category = 'Please select a category.'
     if (!f.type)     errs.type     = 'Please select a type.'
-    if (!f.source)   errs.source   = 'Please select where you\'re submitting from.'
 
     const s = f.suggestion.trim()
-    if (!s)                                       errs.suggestion = 'Please write your suggestion.'
-    else if (s.length < FIELD_LIMITS.suggestion.min) errs.suggestion = `At least ${FIELD_LIMITS.suggestion.min} characters required.`
-    else if (s.length > FIELD_LIMITS.suggestion.max) errs.suggestion = `Maximum ${FIELD_LIMITS.suggestion.max} characters.`
+    if (!s)                                            errs.suggestion = 'Please write your suggestion.'
+    else if (s.length < FIELD_LIMITS.suggestion.min)   errs.suggestion = `At least ${FIELD_LIMITS.suggestion.min} characters required.`
+    else if (s.length > FIELD_LIMITS.suggestion.max)   errs.suggestion = `Maximum ${FIELD_LIMITS.suggestion.max} characters.`
 
     const w = f.why.trim()
     if (!w)                                  errs.why = 'Please explain why this would help.'
@@ -103,14 +101,13 @@ function SuggestionFormInner() {
     e.preventDefault()
     if (status === 'submitting') return
 
-    // Touch all fields so inline errors become visible
-    setTouched(new Set(['category', 'type', 'suggestion', 'why', 'source', 'extra', 'username']))
+    setTouched(new Set(['category', 'type', 'suggestion', 'why', 'extra', 'username']))
 
     const errs = validate(fields)
     if (Object.keys(errs).length > 0) {
       setStatus('idle')
       setErrorMsg('')
-      return // inline errors visible — no need for a general message
+      return
     }
 
     setStatus('submitting')
@@ -143,9 +140,24 @@ function SuggestionFormInner() {
   const submitting = status === 'submitting'
   const errors     = validate(fields)
 
-  // Only show an error if the field has been touched (blurred or submit attempted)
   function fieldErr(key: string): string | undefined {
     return touched.has(key) ? errors[key] : undefined
+  }
+
+  // ─── Dead link — no valid source in URL ───────────────────────────────────
+  if (!validSource) {
+    return (
+      <div className="form-shell">
+        <div className="form-card" style={{ textAlign: 'center', padding: '56px 32px' }}>
+          <div className="brand-mark form-brand-mark" style={{ margin: '0 auto 24px' }} />
+          <h1 className="form-title" style={{ marginBottom: 12 }}>Invalid link</h1>
+          <p className="form-desc" style={{ maxWidth: 360, margin: '0 auto' }}>
+            This link is missing a source. Use the specific link shared in Discord,
+            stream chat, or YouTube — don't open this page directly.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -153,11 +165,9 @@ function SuggestionFormInner() {
       <div className="form-card">
         <div className="brand-mark form-brand-mark" />
 
-        {validSource && (
-          <div className="form-source-tag">
-            Responding from <strong>{validSource}</strong>
-          </div>
-        )}
+        <div className="form-source-tag">
+          Responding from <strong>{validSource}</strong>
+        </div>
 
         <h1 className="form-title">Nasty N8 Suggestion Box</h1>
         <p className="form-desc">
@@ -293,30 +303,6 @@ function SuggestionFormInner() {
               </span>
             </div>
             {fieldErr('extra') && <div className="field-error">{fieldErr('extra')}</div>}
-          </div>
-
-          {/* Source (auto-filled or manual) */}
-          <div className={`form-field${fieldErr('source') ? ' has-error' : ''}`}>
-            <label className="form-label">
-              Where are you submitting from? <span className="req">*</span>
-            </label>
-            <select
-              className="form-select"
-              value={fields.source}
-              onChange={e => set('source', e.target.value)}
-              onBlur={() => touch('source')}
-            >
-              <option value="">Select a source…</option>
-              {SOURCE_OPTIONS.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-            {validSource && (
-              <p className="form-hint">
-                Auto-filled from the link you used. Leave this as-is unless it's wrong.
-              </p>
-            )}
-            {fieldErr('source') && <div className="field-error">{fieldErr('source')}</div>}
           </div>
 
           {status === 'error' && errorMsg && (
