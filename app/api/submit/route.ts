@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase-admin'
+import { getApps } from 'firebase-admin/app'
 import { FieldValue } from 'firebase-admin/firestore'
 import { makeTitle, makePreview } from '@/lib/utils'
 import { CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, FIELD_LIMITS } from '@/lib/config'
@@ -35,19 +36,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, id: 'filtered' })
   }
 
-  // ── reCAPTCHA v3 verification (active once RECAPTCHA_SECRET_KEY is set — v2.6) ─
-  const rcSecret = process.env.RECAPTCHA_SECRET_KEY
-  if (rcSecret) {
+  // ── reCAPTCHA Enterprise verification (active once NEXT_PUBLIC_RECAPTCHA_SITE_KEY is set) ─
+  const rcSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+  if (rcSiteKey) {
     if (!body.recaptchaToken) {
       return NextResponse.json({ error: 'Bot check failed. Please refresh and try again.' }, { status: 400 })
     }
-    const rcRes  = await fetch('https://www.googleapis.com/recaptcha/api/siteverify', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body:    `secret=${rcSecret}&response=${encodeURIComponent(body.recaptchaToken)}`,
-    })
-    const rcData = await rcRes.json() as { success: boolean; score?: number }
-    if (!rcData.success || (rcData.score !== undefined && rcData.score < 0.5)) {
+    const rcPassed = await verifyRecaptchaEnterprise(body.recaptchaToken, rcSiteKey)
+    if (!rcPassed) {
       return NextResponse.json({ error: 'Bot check failed. Please refresh and try again.' }, { status: 400 })
     }
   }
@@ -128,6 +124,48 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('[submit] Firestore write failed:', err)
     return NextResponse.json({ error: 'Failed to save suggestion' }, { status: 500 })
+  }
+}
+
+// ─── reCAPTCHA Enterprise verification ───────────────────────────────────────
+
+async function verifyRecaptchaEnterprise(token: string, siteKey: string): Promise<boolean> {
+  try {
+    const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID
+    const credential = getApps()[0]?.options.credential as {
+      getAccessToken: () => Promise<{ access_token: string }>
+    } | undefined
+    if (!credential) return false
+
+    const { access_token } = await credential.getAccessToken()
+
+    const res = await fetch(
+      `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/assessments`,
+      {
+        method:  'POST',
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event: { token, siteKey, expectedAction: 'submit' },
+        }),
+      }
+    )
+
+    if (!res.ok) return false
+
+    const data = await res.json() as {
+      tokenProperties?: { valid: boolean; action?: string }
+      riskAnalysis?:    { score?: number }
+    }
+
+    if (!data.tokenProperties?.valid) return false
+    if ((data.riskAnalysis?.score ?? 1) < 0.5) return false
+
+    return true
+  } catch {
+    return false
   }
 }
 

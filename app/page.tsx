@@ -3,12 +3,14 @@ import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, FIELD_LIMITS } from '@/lib/config'
 
-// ─── reCAPTCHA v3 type ────────────────────────────────────────────────────────
+// ─── reCAPTCHA Enterprise type ───────────────────────────────────────────────
 declare global {
   interface Window {
     grecaptcha?: {
-      ready: (cb: () => void) => void
-      execute: (siteKey: string, opts: { action: string }) => Promise<string>
+      enterprise: {
+        ready: (cb: () => void) => void
+        execute: (siteKey: string, opts: { action: string }) => Promise<string>
+      }
     }
   }
 }
@@ -45,12 +47,12 @@ function SuggestionFormInner() {
   const [status,   setStatus]   = useState<'idle' | 'submitting' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
-  // Load reCAPTCHA v3 script if the site key is configured
+  // Load reCAPTCHA Enterprise script if the site key is configured
   useEffect(() => {
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
     if (!siteKey || document.querySelector('[data-recaptcha]')) return
     const script = document.createElement('script')
-    script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`
+    script.src = `https://www.google.com/recaptcha/enterprise.js?render=${siteKey}`
     script.dataset.recaptcha = '1'
     script.async = true
     document.head.appendChild(script)
@@ -87,10 +89,10 @@ function SuggestionFormInner() {
 
   async function getRecaptchaToken(): Promise<string | null> {
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-    if (!siteKey || !window.grecaptcha) return null
+    if (!siteKey || !window.grecaptcha?.enterprise) return null
     return new Promise(resolve => {
-      window.grecaptcha!.ready(() => {
-        window.grecaptcha!.execute(siteKey, { action: 'submit' })
+      window.grecaptcha!.enterprise.ready(() => {
+        window.grecaptcha!.enterprise.execute(siteKey, { action: 'submit' })
           .then(token => resolve(token))
           .catch(() => resolve(null))
       })

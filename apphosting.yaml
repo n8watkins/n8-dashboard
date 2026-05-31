@@ -77,23 +77,14 @@ env:
     availability:
       - RUNTIME
 
-  # ── reCAPTCHA v3 (v2.6) — ENABLE AS A PAIR ───────────────────────────────
-  # reCAPTCHA is all-or-nothing: the public site key (inlined at BUILD) and the
-  # server secret must both be real and present, or both absent. Half-enabling
-  # breaks the live form (client sends no/invalid token, server rejects every
-  # submit). Until then, honeypot + IP rate-limit + length checks guard the form.
-  # To activate: create the v3 key at google.com/recaptcha/admin/create (add your
-  # App Hosting domain + localhost), create the recaptcha-secret-key secret, then
-  # uncomment BOTH entries below and set the real site key value.
-  # - variable: NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-  #   value: your-recaptcha-v3-site-key
-  #   availability:
-  #     - BUILD
-  #     - RUNTIME
-  # - variable: RECAPTCHA_SECRET_KEY
-  #   secret: recaptcha-secret-key
-  #   availability:
-  #     - RUNTIME
+  # ── reCAPTCHA Enterprise (v2.6) ──────────────────────────────────────────
+  # Score-based (invisible). Server verification uses the Firebase Admin service
+  # account credential — no separate secret key needed.
+  - variable: NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+    value: 6Ld0_gQtAAAAAB5mKmgZghxY_XSxELpJuPAx0H-N
+    availability:
+      - BUILD
+      - RUNTIME
 
   # ── Weekly recap cron auth (Cloud Scheduler Bearer token) ────────────────
   # Admin UI button works without this; only the cron/Bearer path needs it.
