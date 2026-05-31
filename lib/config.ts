@@ -11,21 +11,15 @@ export const CATEGORY_OPTIONS = [
   'Live stream',
   'Video / Shorts',
   'Discord',
-  'Emotes / graphics',
-  'Coaching / Sweat Lab',
-  'Events / community games',
-  'Website / links / resources',
   'Other',
 ] as const
 
 export const TYPE_OPTIONS = [
   'New idea',
-  'Improvement',
   'Problem / bug',
   'Rules / moderation',
-  'Content idea',
+  'Content',
   'Community request',
-  'Question',
   'Other',
 ] as const
 

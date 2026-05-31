@@ -39,7 +39,6 @@ function SuggestionFormInner() {
     suggestion: '',
     why:        '',
     username:   '',
-    extra:      '',
     source:     validSource,
     hp:         '', // honeypot — must stay empty
   })
@@ -70,6 +69,7 @@ function SuggestionFormInner() {
     const errs: Record<string, string> = {}
     if (!f.category) errs.category = 'Please select a category.'
     if (!f.type)     errs.type     = 'Please select a type.'
+    if (!validSource && !f.source) errs.source = 'Please select a source.'
 
     const s = f.suggestion.trim()
     if (!s)                                            errs.suggestion = 'Please write your suggestion.'
@@ -81,7 +81,6 @@ function SuggestionFormInner() {
     else if (w.length < FIELD_LIMITS.why.min)   errs.why = `At least ${FIELD_LIMITS.why.min} characters required.`
     else if (w.length > FIELD_LIMITS.why.max)   errs.why = `Maximum ${FIELD_LIMITS.why.max} characters.`
 
-    if (f.extra.length    > FIELD_LIMITS.extra.max)    errs.extra    = `Maximum ${FIELD_LIMITS.extra.max} characters.`
     if (f.username.length > FIELD_LIMITS.username.max) errs.username = `Maximum ${FIELD_LIMITS.username.max} characters.`
 
     return errs
@@ -103,7 +102,9 @@ function SuggestionFormInner() {
     e.preventDefault()
     if (status === 'submitting') return
 
-    setTouched(new Set(['category', 'type', 'suggestion', 'why', 'extra', 'username']))
+    const allTouched = ['category', 'type', 'suggestion', 'why', 'username']
+    if (!validSource) allTouched.push('source')
+    setTouched(new Set(allTouched))
 
     const errs = validate(fields)
     if (Object.keys(errs).length > 0) {
@@ -146,30 +147,16 @@ function SuggestionFormInner() {
     return touched.has(key) ? errors[key] : undefined
   }
 
-  // ─── Dead link — no valid source in URL ───────────────────────────────────
-  if (!validSource) {
-    return (
-      <div className="form-shell">
-        <div className="form-card" style={{ textAlign: 'center', padding: '56px 32px' }}>
-          <div className="brand-mark form-brand-mark" style={{ margin: '0 auto 24px' }} />
-          <h1 className="form-title" style={{ marginBottom: 12 }}>Invalid link</h1>
-          <p className="form-desc" style={{ maxWidth: 360, margin: '0 auto' }}>
-            This link is missing a source. Use the specific link shared in Discord,
-            stream chat, or YouTube — don't open this page directly.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="form-shell">
       <div className="form-card">
         <div className="brand-mark form-brand-mark" />
 
-        <div className="form-source-tag">
-          Responding from <strong>{validSource}</strong>
-        </div>
+        {validSource && (
+          <div className="form-source-tag">
+            Responding from <strong>{validSource}</strong>
+          </div>
+        )}
 
         <h1 className="form-title">Nasty N8 Suggestion Box</h1>
         <p className="form-desc">
@@ -288,24 +275,26 @@ function SuggestionFormInner() {
             {fieldErr('username') && <div className="field-error">{fieldErr('username')}</div>}
           </div>
 
-          {/* Anything else */}
-          <div className={`form-field${fieldErr('extra') ? ' has-error' : ''}`}>
-            <label className="form-label">Anything else?</label>
-            <textarea
-              className="form-textarea"
-              style={{ minHeight: 80 }}
-              value={fields.extra}
-              onChange={e => set('extra', e.target.value)}
-              onBlur={() => touch('extra')}
-              placeholder="Extra context, examples, screenshots, or whatever else helps."
-            />
-            <div className="char-count-row">
-              <span className={fields.extra.length > FIELD_LIMITS.extra.max ? 'over-limit' : ''}>
-                {fields.extra.length} / {FIELD_LIMITS.extra.max}
-              </span>
+          {/* Source — only shown when not pre-set from URL */}
+          {!validSource && (
+            <div className={`form-field${fieldErr('source') ? ' has-error' : ''}`}>
+              <label className="form-label">
+                Where are you submitting from? <span className="req">*</span>
+              </label>
+              <select
+                className="form-select"
+                value={fields.source}
+                onChange={e => set('source', e.target.value)}
+                onBlur={() => touch('source')}
+              >
+                <option value="">Select a source…</option>
+                {SOURCE_OPTIONS.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+              {fieldErr('source') && <div className="field-error">{fieldErr('source')}</div>}
             </div>
-            {fieldErr('extra') && <div className="field-error">{fieldErr('extra')}</div>}
-          </div>
+          )}
 
           {status === 'error' && errorMsg && (
             <div className="form-error">{errorMsg}</div>
