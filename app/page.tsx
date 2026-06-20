@@ -1,19 +1,27 @@
 'use client'
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, FIELD_LIMITS } from '@/lib/config'
 
-// ─── reCAPTCHA Enterprise type ───────────────────────────────────────────────
+// ─── Cloudflare Turnstile type ───────────────────────────────────────────────
 declare global {
   interface Window {
-    grecaptcha?: {
-      enterprise: {
-        ready: (cb: () => void) => void
-        execute: (siteKey: string, opts: { action: string }) => Promise<string>
-      }
+    turnstile?: {
+      render: (el: string | HTMLElement, opts: {
+        sitekey: string
+        callback?: (token: string) => void
+        'expired-callback'?: () => void
+        'error-callback'?: () => void
+        theme?: 'auto' | 'light' | 'dark'
+        size?: 'normal' | 'flexible' | 'compact'
+      }) => string
+      reset: (widgetId?: string) => void
+      remove: (widgetId?: string) => void
     }
   }
 }
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 // ─── Public suggestion form ───────────────────────────────────────────────────
 
@@ -45,17 +53,52 @@ function SuggestionFormInner() {
   const [touched,  setTouched]  = useState<Set<string>>(new Set())
   const [status,   setStatus]   = useState<'idle' | 'submitting' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
-  // Load reCAPTCHA Enterprise script if the site key is configured
+  const widgetRef   = useRef<HTMLDivElement>(null)
+  const widgetIdRef = useRef<string | null>(null)
+
+  // Load Cloudflare Turnstile and render the widget if a site key is configured.
+  // The managed widget auto-solves for legit users and fires `callback` with a
+  // single-use token, which we send to /api/submit for server-side siteverify.
   useEffect(() => {
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-    if (!siteKey || document.querySelector('[data-recaptcha]')) return
-    const script = document.createElement('script')
-    script.src = `https://www.google.com/recaptcha/enterprise.js?render=${siteKey}`
-    script.dataset.recaptcha = '1'
-    script.async = true
-    document.head.appendChild(script)
+    if (!TURNSTILE_SITE_KEY) return
+
+    function render() {
+      if (!widgetRef.current || !window.turnstile || widgetIdRef.current) return
+      widgetIdRef.current = window.turnstile.render(widgetRef.current, {
+        sitekey: TURNSTILE_SITE_KEY!,
+        theme: 'auto',
+        callback:           token => setTurnstileToken(token),
+        'expired-callback': ()    => setTurnstileToken(null),
+        'error-callback':   ()    => setTurnstileToken(null),
+      })
+    }
+
+    if (window.turnstile) {
+      render()
+    } else if (!document.querySelector('[data-turnstile]')) {
+      const script = document.createElement('script')
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
+      script.async = true
+      script.defer = true
+      script.dataset.turnstile = '1'
+      script.onload = render
+      document.head.appendChild(script)
+    } else {
+      const t = setInterval(() => {
+        if (window.turnstile) { render(); clearInterval(t) }
+      }, 200)
+      return () => clearInterval(t)
+    }
   }, [])
+
+  function resetTurnstile() {
+    if (widgetIdRef.current && window.turnstile) {
+      window.turnstile.reset(widgetIdRef.current)
+      setTurnstileToken(null)
+    }
+  }
 
   function set(key: string, value: string) {
     setFields(f => ({ ...f, [key]: value }))
@@ -86,18 +129,6 @@ function SuggestionFormInner() {
     return errs
   }
 
-  async function getRecaptchaToken(): Promise<string | null> {
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-    if (!siteKey || !window.grecaptcha?.enterprise) return null
-    return new Promise(resolve => {
-      window.grecaptcha!.enterprise.ready(() => {
-        window.grecaptcha!.enterprise.execute(siteKey, { action: 'submit' })
-          .then(token => resolve(token))
-          .catch(() => resolve(null))
-      })
-    })
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (status === 'submitting') return
@@ -113,16 +144,21 @@ function SuggestionFormInner() {
       return
     }
 
+    // Bot check must be solved before submit (Turnstile auto-solves on load).
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setStatus('error')
+      setErrorMsg('Bot check is still loading — give it a second and try again.')
+      return
+    }
+
     setStatus('submitting')
     setErrorMsg('')
-
-    const recaptchaToken = await getRecaptchaToken()
 
     try {
       const res = await fetch('/api/submit', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ ...fields, recaptchaToken }),
+        body:    JSON.stringify({ ...fields, turnstileToken }),
       })
 
       const data = await res.json()
@@ -130,6 +166,7 @@ function SuggestionFormInner() {
       if (!res.ok) {
         setStatus('error')
         setErrorMsg(data.error || 'Something went wrong. Try again.')
+        resetTurnstile() // token is single-use — refresh it for the retry
         return
       }
 
@@ -137,6 +174,7 @@ function SuggestionFormInner() {
     } catch {
       setStatus('error')
       setErrorMsg('Network error — check your connection and try again.')
+      resetTurnstile()
     }
   }
 
@@ -294,6 +332,10 @@ function SuggestionFormInner() {
               </select>
               {fieldErr('source') && <div className="field-error">{fieldErr('source')}</div>}
             </div>
+          )}
+
+          {TURNSTILE_SITE_KEY && (
+            <div ref={widgetRef} className="turnstile-widget" style={{ margin: '4px 0 16px' }} />
           )}
 
           {status === 'error' && errorMsg && (

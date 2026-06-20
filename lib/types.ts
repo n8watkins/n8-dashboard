@@ -75,6 +75,6 @@ export interface SubmitPayload {
   username: string
   extra: string
   source: string
-  hp?: string            // honeypot — must be empty; bots fill it
-  recaptchaToken?: string // reCAPTCHA v3 token (wired in v2.6)
+  hp?: string             // honeypot — must be empty; bots fill it
+  turnstileToken?: string // Cloudflare Turnstile token (verified server-side)
 }

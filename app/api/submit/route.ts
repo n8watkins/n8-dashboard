@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase-admin'
-import { getApps } from 'firebase-admin/app'
 import { FieldValue } from 'firebase-admin/firestore'
 import { makeTitle, makePreview } from '@/lib/utils'
 import { CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, FIELD_LIMITS } from '@/lib/config'
@@ -36,14 +35,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, id: 'filtered' })
   }
 
-  // ── reCAPTCHA Enterprise verification (active once NEXT_PUBLIC_RECAPTCHA_SITE_KEY is set) ─
-  const rcSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-  if (rcSiteKey) {
-    if (!body.recaptchaToken) {
+  // ── Cloudflare Turnstile verification (active once TURNSTILE_SECRET_KEY is set) ─
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
+  if (turnstileSecret) {
+    if (!body.turnstileToken) {
       return NextResponse.json({ error: 'Bot check failed. Please refresh and try again.' }, { status: 400 })
     }
-    const rcPassed = await verifyRecaptchaEnterprise(body.recaptchaToken, rcSiteKey)
-    if (!rcPassed) {
+    const passed = await verifyTurnstile(body.turnstileToken, turnstileSecret, ip)
+    if (!passed) {
       return NextResponse.json({ error: 'Bot check failed. Please refresh and try again.' }, { status: 400 })
     }
   }
@@ -127,42 +126,30 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ─── reCAPTCHA Enterprise verification ───────────────────────────────────────
+// ─── Cloudflare Turnstile verification ───────────────────────────────────────
+// Replaces reCAPTCHA Enterprise (which required a Google Cloud project + the
+// Firebase service-account credential). Turnstile is host-independent and free:
+// one server-side POST to siteverify, no Google dependency.
 
-async function verifyRecaptchaEnterprise(token: string, siteKey: string): Promise<boolean> {
+async function verifyTurnstile(token: string, secret: string, ip: string): Promise<boolean> {
   try {
-    const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID
-    const credential = getApps()[0]?.options.credential as {
-      getAccessToken: () => Promise<{ access_token: string }>
-    } | undefined
-    if (!credential) return false
+    const form = new URLSearchParams()
+    form.append('secret', secret)
+    form.append('response', token)
+    if (ip && ip !== 'unknown') form.append('remoteip', ip)
 
-    const { access_token } = await credential.getAccessToken()
-
-    const res = await fetch(
-      `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/assessments`,
-      {
-        method:  'POST',
-        headers: {
-          'Authorization': `Bearer ${access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          event: { token, siteKey, expectedAction: 'submit' },
-        }),
-      }
-    )
-
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    form,
+    })
     if (!res.ok) return false
 
-    const data = await res.json() as {
-      tokenProperties?: { valid: boolean; action?: string }
-      riskAnalysis?:    { score?: number }
+    const data = (await res.json()) as { success: boolean; 'error-codes'?: string[] }
+    if (!data.success) {
+      console.warn('[turnstile] verification failed:', data['error-codes'])
+      return false
     }
-
-    if (!data.tokenProperties?.valid) return false
-    if ((data.riskAnalysis?.score ?? 1) < 0.5) return false
-
     return true
   } catch {
     return false
