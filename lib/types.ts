@@ -1,10 +1,9 @@
-import type { Timestamp } from 'firebase/firestore'
 import type { SuggestionStatus } from './config'
 
-// ─── Firestore document shapes ────────────────────────────────────────────────
+// ─── Stored document shapes (DB row mirrors) ──────────────────────────────────
 
 export interface SuggestionDoc {
-  timestamp: Timestamp
+  timestamp: Date
   category: string
   type: string
   suggestion: string
@@ -30,7 +29,7 @@ export interface Suggestion extends Omit<SuggestionDoc, 'timestamp'> {
 }
 
 export interface ActivityLogDoc {
-  timestamp: Timestamp
+  timestamp: Date
   action: string
   actionSource: string
   suggestionId: string
