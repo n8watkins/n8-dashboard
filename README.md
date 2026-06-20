@@ -1,6 +1,6 @@
 # Nasty N8 Dashboard
 
-Next.js + Firebase community dashboard for Nasty N8. The first (and currently
+Next.js community dashboard for Nasty N8. The first (and currently
 main) section is the **Suggestion Box** — a rewrite of the Google Forms/Sheets
 suggestion system. Coaching is planned as a second section (see the v4 direction
 in `design-mockups/plan.html`).
@@ -15,56 +15,35 @@ in `design-mockups/plan.html`).
 
 ## Stack
 
-- **Next.js 14** (App Router, TypeScript)
-- **Firebase Firestore** — replaces Google Sheets
-- **Firebase Auth** (Google sign-in) — replaces no auth
-- **Nodemailer** — email notification on each submission (optional)
+- **Next.js 16** (App Router, TypeScript, React 19)
+- **Turso / libSQL** (Drizzle ORM) — database
+- **Better Auth** — magic-link admin login (passwordless, no Google)
+- **Cloudflare Turnstile** — bot protection (host-independent)
+- **Nodemailer** — magic-link + submission emails (Gmail SMTP, optional)
+- **Hosting:** Vercel. No Firebase / Google Cloud anywhere.
 
 ---
 
-## Setup (one-time)
+## Local setup
 
-### 1. Create a Firebase project
-
-1. Go to [console.firebase.google.com](https://console.firebase.google.com)
-2. **Create project** → name it `nasty-n8-dashboard` (or whatever)
-3. **Build → Firestore Database** → Create database → Start in **production mode** → pick a region
-4. **Build → Authentication** → Get started → **Google** provider → Enable it → Save
-5. **Project Settings** → **Your apps** → Add app → Web → Register → copy the `firebaseConfig` object
-
-### 2. Get your service account key
-
-1. **Project Settings → Service accounts** → Generate new private key → Download JSON
-2. Open the JSON file — you need `project_id`, `client_email`, and `private_key`
-
-### 3. Fill in `.env.local`
+Local dev needs **no accounts** — the database is a local libSQL file and the
+bot check uses Cloudflare's always-pass test keys (already in `.env.local.example`).
 
 ```bash
-cp .env.local.example .env.local
-```
-
-Then fill in every value in `.env.local`.
-
-For `FIREBASE_ADMIN_PRIVATE_KEY`: paste the full key from the JSON (it starts with `-----BEGIN RSA PRIVATE KEY-----`).
-
-### 4. Deploy Firestore rules & indexes
-
-```bash
-npm install -g firebase-tools
-firebase login
-firebase use <your-project-id>
-firebase deploy --only firestore
-```
-
-### 5. Run locally
-
-```bash
+cp .env.local.example .env.local   # defaults work for local dev as-is
 npm install
+npx drizzle-kit push               # create the tables in local.db
 npm run dev
 ```
 
-Visit `http://localhost:3000` — public form.
-Visit `http://localhost:3000/admin` — sign in with your Google account.
+- Public form: `http://localhost:3000`
+- Admin: `http://localhost:3000/admin` → enter an admin email. The magic-link
+  **prints to the dev-server console** locally (no SMTP needed).
+
+Admin emails are the `ADMIN_EMAILS` array in `lib/config.ts`. To load data from a
+Firebase backup JSON: `npx tsx scripts/import-to-turso.ts <backup.json>`.
+
+For production (Turso + Vercel + Turnstile keys), see **[DEPLOY.md](./DEPLOY.md)**.
 
 ---
 
@@ -100,15 +79,12 @@ If these are blank, notifications are silently skipped.
 
 ## Deployment (Vercel — free)
 
-```bash
-npm install -g vercel
-vercel
-```
-
-Set all your `.env.local` values as **Environment Variables** in the Vercel dashboard.
+See **[DEPLOY.md](./DEPLOY.md)** for the full runbook: create the Turso database,
+push the schema, import data, get Turnstile keys, set the Vercel env vars, and
+wire the weekly-recap cron.
 
 ---
 
 ## Adding more admins later
 
-In `firestore.rules` and `lib/config.ts`, add their email to the `ADMIN_EMAILS` array. Redeploy rules.
+Add their email to the `ADMIN_EMAILS` array in `lib/config.ts` and redeploy.
