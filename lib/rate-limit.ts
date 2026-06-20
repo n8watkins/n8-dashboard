@@ -1,8 +1,9 @@
 import crypto from 'crypto'
-import { FieldValue } from 'firebase-admin/firestore'
-import { getAdminDb } from './firebase-admin'
+import { eq } from 'drizzle-orm'
+import { db } from './db'
+import { rateLimit } from './schema'
 
-// ─── IP-based rate limiting (Firestore-backed) ────────────────────────────────
+// ─── IP-based rate limiting (Turso-backed) ────────────────────────────────────
 
 const WINDOW_MINUTE  = 60 * 1000        // ms
 const WINDOW_HOUR    = 60 * 60 * 1000   // ms
@@ -15,11 +16,10 @@ function hashIp(ip: string): string {
 
 export async function checkRateLimit(ip: string): Promise<{ ok: boolean; resetIn?: number }> {
   const key  = hashIp(ip)
-  const ref  = getAdminDb().collection('rate_limit').doc(key)
-  const snap = await ref.get()
+  const rows = await db.select().from(rateLimit).where(eq(rateLimit.id, key)).limit(1)
 
   const now        = Date.now()
-  const stored     = snap.exists ? ((snap.data()!.timestamps as number[]) ?? []) : []
+  const stored     = rows[0]?.timestamps ?? []
   const recent     = stored.filter(t => now - t < WINDOW_HOUR)
   const lastMinute = recent.filter(t => now - t < WINDOW_MINUTE)
 
@@ -35,9 +35,14 @@ export async function checkRateLimit(ip: string): Promise<{ ok: boolean; resetIn
     return { ok: false, resetIn }
   }
 
-  // Append timestamp and write back (fire-and-forget — don't block the response)
+  // Append timestamp and upsert. Awaited (not fire-and-forget) so the write
+  // completes before a serverless function can be frozen; non-fatal on error.
   const updated = [...recent, now].slice(-60)
-  ref.set({ timestamps: updated, updatedAt: FieldValue.serverTimestamp() }).catch(() => {})
+  try {
+    await db.insert(rateLimit)
+      .values({ id: key, timestamps: updated, updatedAt: new Date() })
+      .onConflictDoUpdate({ target: rateLimit.id, set: { timestamps: updated, updatedAt: new Date() } })
+  } catch { /* rate-limit write is best-effort */ }
 
   return { ok: true }
 }

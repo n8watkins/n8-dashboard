@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminDb } from '@/lib/firebase-admin'
-import { Timestamp } from 'firebase-admin/firestore'
+import { db } from '@/lib/db'
+import { suggestions, activityLog } from '@/lib/schema'
+import { count, eq, gte } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { ADMIN_EMAILS, SOURCE_OPTIONS } from '@/lib/config'
 import nodemailer from 'nodemailer'
@@ -61,58 +62,45 @@ async function isAuthorized(req: NextRequest): Promise<boolean> {
 // ─── Stats builder ─────────────────────────────────────────────────────────────
 
 async function buildRecapStats(): Promise<RecapStats> {
-  const now       = new Date()
-  const weekAgo   = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const weekAgoTs = Timestamp.fromDate(weekAgo)
+  const now     = new Date()
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
   const fmt = (d: Date) =>
     d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
-  // FIX #3: query only this week's documents instead of a full collection scan.
-  // Single-field timestamp index is auto-created by Firestore.
-  type SugData = Record<string, unknown>
-  const weekSnap = await getAdminDb()
-    .collection('suggestions')
-    .where('timestamp', '>=', weekAgoTs)
-    .get()
-  const thisWeek: (SugData & { id: string })[] = weekSnap.docs.map(d =>
-    ({ id: d.id, ...(d.data() as SugData) })
-  )
+  // This week's submissions (idx_suggestions_status_ts covers the timestamp scan).
+  const thisWeek = await db.select().from(suggestions).where(gte(suggestions.timestamp, weekAgo))
 
   // By source (keep all 5, zero-fill missing)
   const bySource: Record<string, number> = Object.fromEntries(SOURCE_OPTIONS.map(s => [s, 0]))
   for (const s of thisWeek) {
-    const src = String(s.source || '')
+    const src = s.source || ''
     if (src in bySource) bySource[src]++
   }
 
   // By category (sorted desc, top 6)
   const catMap: Record<string, number> = {}
   for (const s of thisWeek) {
-    const cat = String(s.category || '')
+    const cat = s.category || ''
     if (cat) catMap[cat] = (catMap[cat] || 0) + 1
   }
-  const byCategory = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 6)
+  const byCategory: Array<[string, number]> =
+    Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 6)
 
   const flagged = thisWeek.filter(s => s.moderationState === 'flagged').length
 
-  // FIX #3 cont.: use count() aggregation for pipeline numbers — reads no documents.
+  // Pipeline counts via COUNT() aggregation — reads no rows.
   const [newCount, activeCount, doneCount] = await Promise.all([
-    getAdminDb().collection('suggestions').where('status', '==', 'New').count().get(),
-    getAdminDb().collection('suggestions').where('status', '==', 'Active').count().get(),
-    getAdminDb().collection('suggestions').where('status', '==', 'Done').count().get(),
+    db.select({ c: count() }).from(suggestions).where(eq(suggestions.status, 'New')),
+    db.select({ c: count() }).from(suggestions).where(eq(suggestions.status, 'Active')),
+    db.select({ c: count() }).from(suggestions).where(eq(suggestions.status, 'Done')),
   ])
-  const queueSize   = newCount.data().count
-  const activeSize  = activeCount.data().count
-  const doneAllTime = doneCount.data().count
+  const queueSize   = newCount[0].c
+  const activeSize  = activeCount[0].c
+  const doneAllTime = doneCount[0].c
 
   // ── Activity log — this week ──────────────────────────────────────────────────
-  type LogData = Record<string, unknown>
-  const logSnap = await getAdminDb()
-    .collection('activity_log')
-    .where('timestamp', '>=', weekAgoTs)
-    .get()
-  const logEntries = logSnap.docs.map(d => d.data() as LogData)
+  const logEntries = await db.select().from(activityLog).where(gte(activityLog.timestamp, weekAgo))
 
   const decisions = logEntries.filter(e =>
     DECISION_ACTIONS.includes(e.action as typeof DECISION_ACTIONS[number])
@@ -120,25 +108,21 @@ async function buildRecapStats(): Promise<RecapStats> {
 
   // FIX #4: deduplicate by last decision per suggestion.
   // Sort ascending by timestamp so the final (latest) entry wins per item.
-  const sorted = [...decisions].sort((a, b) => {
-    const ta = (a.timestamp as Timestamp)?.toMillis?.() ?? 0
-    const tb = (b.timestamp as Timestamp)?.toMillis?.() ?? 0
-    return ta - tb
-  })
+  const sorted = [...decisions].sort((a, b) =>
+    (a.timestamp?.getTime() ?? 0) - (b.timestamp?.getTime() ?? 0)
+  )
 
-  const lastDecision = new Map<string, LogData>()
-  for (const e of sorted) {
-    lastDecision.set(String(e.suggestionId), e)
-  }
+  const lastDecision = new Map<string, typeof decisions[number]>()
+  for (const e of sorted) lastDecision.set(e.suggestionId, e)
 
   const movedToDone = Array.from(lastDecision.values())
-    .filter(e => String(e.newStatus) === 'Done')
-    .map(e => ({ id: String(e.suggestionId), preview: String(e.preview || '') }))
+    .filter(e => e.newStatus === 'Done')
+    .map(e => ({ id: e.suggestionId, preview: e.preview || '' }))
     .slice(0, 10)
 
   const movedToActive = Array.from(lastDecision.values())
-    .filter(e => String(e.newStatus) === 'Active')
-    .map(e => ({ id: String(e.suggestionId), preview: String(e.preview || '') }))
+    .filter(e => e.newStatus === 'Active')
+    .map(e => ({ id: e.suggestionId, preview: e.preview || '' }))
     .slice(0, 10)
 
   // unique items that received at least one status decision this week

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminDb } from '@/lib/firebase-admin'
-import { FieldValue } from 'firebase-admin/firestore'
+import crypto from 'crypto'
+import { db } from '@/lib/db'
+import { suggestions } from '@/lib/schema'
 import { makeTitle, makePreview } from '@/lib/utils'
 import { CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS, FIELD_LIMITS } from '@/lib/config'
 import type { SubmitPayload } from '@/lib/types'
@@ -87,43 +88,43 @@ export async function POST(req: NextRequest) {
   const flagged         = checkProfanity(`${suggestion} ${body.why} ${extra}`)
   const moderationState = flagged.length > 0 ? 'flagged' : 'clean'
 
+  const id = crypto.randomUUID()
   try {
-    // Write to Firestore
-    const docRef = await getAdminDb().collection('suggestions').add({
-      timestamp:        FieldValue.serverTimestamp(),
-      category:         category.trim(),
-      type:             type.trim(),
-      suggestion:       suggestion.trim(),
-      why:              why.trim(),
+    await db.insert(suggestions).values({
+      id,
+      timestamp:       new Date(),
+      category:        category.trim(),
+      type:            type.trim(),
+      suggestion:      suggestion.trim(),
+      why:             why.trim(),
       username,
       extra,
-      source:           source.trim(),
-      status:           'New',
-      internalNotes:    '',
-      preview:          makePreview(suggestion),
-      title:            makeTitle(suggestion),
+      source:          source.trim(),
+      status:          'New',
+      internalNotes:   '',
+      preview:         makePreview(suggestion),
+      title:           makeTitle(suggestion),
       moderationState,
-      moderationFlags:  flagged,
+      moderationFlags: flagged,
     })
-
-    // Send notifications (non-blocking — failures don't fail the request)
-    sendEmailNotification(req, body, docRef.id).catch(err => {
-      console.error('[email] Notification failed (submission still saved):', err)
-    })
-    if (flagged.length > 0) {
-      sendFlaggedNotification(req, body, docRef.id, flagged).catch(err => {
-        console.error('[email] Flagged notification failed:', err)
-      })
-    }
-    notifyDiscord(req, body, docRef.id, flagged.length > 0).catch(err => {
-      console.error('[discord] Webhook failed (submission still saved):', err)
-    })
-
-    return NextResponse.json({ ok: true, id: docRef.id })
   } catch (err) {
-    console.error('[submit] Firestore write failed:', err)
+    console.error('[submit] DB write failed:', err)
     return NextResponse.json({ error: 'Failed to save suggestion' }, { status: 500 })
   }
+
+  // Send notifications. Awaited (allSettled) so they complete before a serverless
+  // function can be frozen; individual failures never fail the saved submission.
+  const channels = ['email', 'flagged', 'discord'] as const
+  const results = await Promise.allSettled([
+    sendEmailNotification(req, body, id),
+    flagged.length > 0 ? sendFlaggedNotification(req, body, id, flagged) : Promise.resolve(),
+    notifyDiscord(req, body, id, flagged.length > 0),
+  ])
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') console.error(`[submit] ${channels[i]} notification failed:`, r.reason)
+  })
+
+  return NextResponse.json({ ok: true, id })
 }
 
 // ─── Cloudflare Turnstile verification ───────────────────────────────────────
