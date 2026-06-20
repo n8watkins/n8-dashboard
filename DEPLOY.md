@@ -1,7 +1,8 @@
-# Deploy — Nasty N8 Suggestion Box
+# Deploy — Nasty N8 Dashboard
 
-Deployment runbook for the post-Firebase stack. The app is a public suggestion
-form plus a 2-admin review dashboard (Next.js 16, App Router, TypeScript).
+Deployment runbook for the post-Firebase stack. The Dashboard's first section is
+the **Suggestion Box** — a public suggestion form plus a 2-admin review dashboard
+(Next.js 16, App Router, TypeScript). Coaching is planned as a later section.
 
 ## 1. Overview
 
