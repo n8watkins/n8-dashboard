@@ -13,6 +13,9 @@ dist/
 .env.local
 .env.*.local
 
+# data backups (may contain submission content / hashed IPs)
+firestore-backup-*.json
+
 # misc
 .DS_Store
 *.pem
