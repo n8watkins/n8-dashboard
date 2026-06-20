@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import type { ActivityLogEntry } from '@/lib/types'
-import { fetchActivityLog, type LogFilters } from '@/lib/firestore'
+import { fetchActivityLog, type LogFilters } from '@/lib/admin-api'
 import { statusClass, sourcePillClass } from '@/lib/utils'
 import { STATUS_OPTIONS } from '@/lib/config'
 

@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import type { Suggestion, SaveReviewPayload } from '@/lib/types'
 import type { SuggestionStatus } from '@/lib/config'
 import { STATUS_OPTIONS, CATEGORY_OPTIONS, TYPE_OPTIONS, SOURCE_OPTIONS } from '@/lib/config'
-import { fetchSuggestions, fetchSuggestion, saveReview, type BrowseFilters } from '@/lib/firestore'
+import { fetchSuggestions, fetchSuggestion, saveReview, type BrowseFilters } from '@/lib/admin-api'
 import { statusClass, sourcePillClass, formatTimestamp } from '@/lib/utils'
 import SuggestionDetail from './SuggestionDetail'
 

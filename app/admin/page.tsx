@@ -10,7 +10,7 @@ import { Brand }          from '@/components/Brand'
 import SourceDashboard    from '@/components/admin/SourceDashboard'
 import SourceLinks        from '@/components/admin/SourceLinks'
 import WeeklyRecap        from '@/components/admin/WeeklyRecap'
-import { fetchStats }     from '@/lib/firestore'
+import { fetchStats }     from '@/lib/admin-api'
 
 type Tab = 'queue' | 'browse' | 'log' | 'links'
 

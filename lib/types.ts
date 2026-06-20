@@ -78,3 +78,40 @@ export interface SubmitPayload {
   hp?: string             // honeypot — must be empty; bots fill it
   turnstileToken?: string // Cloudflare Turnstile token (verified server-side)
 }
+
+// ─── Admin data-layer filters & stats (shared: server queries + client API) ───
+
+export interface BrowseFilters {
+  viewGroup: 'all' | 'new' | 'active' | 'resolved'
+  category?: string
+  type?: string
+  source?: string
+  status?: string
+  search?: string
+}
+
+export interface Stats {
+  all: number
+  new: number
+  active: number
+  resolved: number
+  flagged: number
+}
+
+export interface SourceStats {
+  all:    number
+  d7:     number
+  d30:    number
+  lastAt: Date | null
+}
+
+export interface LogFilters {
+  search?: string
+  year?: string
+  monthKey?: string
+  interaction?: string
+  result?: string
+  sortDirection?: 'asc' | 'desc'
+  onlyWithNotes?: boolean
+  onlyDecisions?: boolean
+}

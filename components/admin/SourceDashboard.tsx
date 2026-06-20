@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { SOURCE_OPTIONS } from '@/lib/config'
-import { fetchSourceBreakdown, type SourceStats } from '@/lib/firestore'
+import { fetchSourceBreakdown, type SourceStats } from '@/lib/admin-api'
 import { sourcePillClass } from '@/lib/utils'
 
 // ─── Per-source submission mini-dashboard ────────────────────────────────────
