@@ -1,7 +1,9 @@
 // ─── Firebase Client SDK (browser-safe) ──────────────────────────────────────
+// NOTE: temporary — Firestore data access is being moved to Turso. Auth has
+// already moved to Better Auth (see lib/auth.ts). This file is removed in the
+// final Firebase teardown step.
 import { initializeApp, getApps } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,6 +17,4 @@ const firebaseConfig = {
 // Prevent re-initializing during hot reload
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
 
-export const db       = getFirestore(app)
-export const auth     = getAuth(app)
-export const googleProvider = new GoogleAuthProvider()
+export const db = getFirestore(app)

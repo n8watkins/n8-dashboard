@@ -1,7 +1,5 @@
 'use client'
 import { useRef, useState } from 'react'
-import { getIdToken } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
 import type { RecapStats, ChannelResult } from '@/app/api/weekly-recap/route'
 
 // ─── Weekly Recap panel (admin) ───────────────────────────────────────────────
@@ -29,24 +27,14 @@ export default function WeeklyRecap() {
   // FIX #7: in-flight ref prevents double-send on rapid clicks.
   const inFlight = useRef(false)
 
-  async function fetchToken(): Promise<string | null> {
-    const user = auth.currentUser
-    if (!user) return null
-    try { return await getIdToken(user) } catch { return null }
-  }
-
   async function handlePreview() {
     if (inFlight.current) return
     inFlight.current = true
     setStatus('loading')
     setError('')
     try {
-      const token = await fetchToken()
-      if (!token) { setStatus('error'); setError('Not signed in.'); return }
-
-      const res  = await fetch('/api/weekly-recap?dry=true', {
-        headers: { 'x-firebase-token': token },
-      })
+      // Same-origin request — the Better Auth session cookie is sent automatically.
+      const res  = await fetch('/api/weekly-recap?dry=true')
       const data = await res.json() as { ok?: boolean; stats?: RecapStats; error?: string }
       if (!data.ok || !data.stats) throw new Error(data.error || 'Unknown error')
       setStats(data.stats)
@@ -65,13 +53,7 @@ export default function WeeklyRecap() {
     setStatus('sending')
     setError('')
     try {
-      const token = await fetchToken()
-      if (!token) { setStatus('error'); setError('Not signed in.'); return }
-
-      const res  = await fetch('/api/weekly-recap', {
-        method:  'POST',
-        headers: { 'x-firebase-token': token },
-      })
+      const res  = await fetch('/api/weekly-recap', { method: 'POST' })
       const data = await res.json() as {
         ok?:       boolean
         stats?:    RecapStats

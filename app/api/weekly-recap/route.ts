@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase-admin'
-import { getAuth } from 'firebase-admin/auth'
 import { Timestamp } from 'firebase-admin/firestore'
+import { auth } from '@/lib/auth'
 import { ADMIN_EMAILS, SOURCE_OPTIONS } from '@/lib/config'
 import nodemailer from 'nodemailer'
 
@@ -45,22 +45,17 @@ async function isAuthorized(req: NextRequest): Promise<boolean> {
   // FIX #8: warn when secret is absent so a cron operator knows why they're
   // getting 401s instead of silently failing.
   if (!secret) {
-    console.warn('[weekly-recap] RECAP_SECRET is not set — Bearer token auth disabled; only Firebase admin tokens will work.')
+    console.warn('[weekly-recap] RECAP_SECRET is not set — Bearer token auth disabled; only admin sessions will work.')
   }
   if (secret && authHeader === `Bearer ${secret}`) return true
 
-  // Admin UI path: Firebase ID token in X-Firebase-Token header
-  const idToken = req.headers.get('x-firebase-token') || ''
-  if (idToken) {
-    try {
-      const decoded = await getAuth().verifyIdToken(idToken)
-      return ADMIN_EMAILS.includes(decoded.email || '')
-    } catch {
-      return false
-    }
+  // Admin UI path: Better Auth session cookie (sent automatically same-origin)
+  try {
+    const session = await auth.api.getSession({ headers: req.headers })
+    return !!session && ADMIN_EMAILS.includes(session.user.email || '')
+  } catch {
+    return false
   }
-
-  return false
 }
 
 // ─── Stats builder ─────────────────────────────────────────────────────────────
