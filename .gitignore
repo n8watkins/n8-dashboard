@@ -24,3 +24,9 @@ yarn-debug.log*
 yarn-error.log*
 firebase-debug.log*
 tsconfig.tsbuildinfo
+
+# local libSQL dev database
+local.db
+local.db-*
+*.db
+*.db-journal
