@@ -9,7 +9,7 @@ in `design-mockups/plan.html`).
 
 | Route | Who | What |
 |-------|-----|------|
-| `/` | Anyone | Public suggestion form (6 fields, source pre-fills from URL) |
+| `/` | Anyone | Public suggestion form (option chips, source pre-fills from URL) |
 | `/success` | Anyone | Thank-you page after submit |
 | `/admin` | You only | Review Queue, Browse All, Activity Log |
 
