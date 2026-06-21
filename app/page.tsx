@@ -319,7 +319,7 @@ function SuggestionFormInner() {
           )}
 
           {TURNSTILE_SITE_KEY && (
-            <div ref={widgetRef} className="turnstile-widget" style={{ margin: '4px 0 16px' }} />
+            <div ref={widgetRef} className="turnstile-widget" style={{ display: 'flex', justifyContent: 'center', margin: '4px 0 16px' }} />
           )}
 
           {status === 'error' && errorMsg && (

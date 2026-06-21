@@ -1354,7 +1354,9 @@ details:not([open]) .chev { transform: rotate(0deg); }
   margin: 0 auto;
   padding: 34px 18px 52px;
 }
-/* soft ambient glow behind the card */
+/* Soft ambient glow behind the card. Gradient centers are kept well INSIDE the
+   layer and fade to transparent before the edges, so nothing clips into a hard
+   line at the container's corners. */
 .form-shell::before {
   content: '';
   position: absolute;
@@ -1362,8 +1364,8 @@ details:not([open]) .chev { transform: rotate(0deg); }
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(55% 38% at 50% 2%,  rgba(74, 222, 128, 0.10), transparent 70%),
-    radial-gradient(45% 35% at 88% 102%, rgba(168, 85, 247, 0.06), transparent 72%);
+    radial-gradient(60% 44% at 50% 16%, rgba(74, 222, 128, 0.10), transparent 66%),
+    radial-gradient(52% 44% at 72% 78%, rgba(168, 85, 247, 0.05), transparent 68%);
 }
 
 /* Scoped to .form-shell so the success page's bare .form-card keeps its base padding. */
