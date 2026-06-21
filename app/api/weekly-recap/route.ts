@@ -32,7 +32,7 @@ export interface RecapStats {
 export type ChannelResult = 'sent' | 'skipped' | 'error'
 
 // Action strings that mean a status decision was made — must match strings
-// written by saveReview() in lib/firestore.ts.
+// written by saveReview() in lib/queries.ts.
 // FIX #9: centralised so a future action name can't silently slip through.
 const DECISION_ACTIONS = ['Decision saved', 'Status edited'] as const
 
@@ -41,14 +41,17 @@ const DECISION_ACTIONS = ['Decision saved', 'Status edited'] as const
 async function isAuthorized(req: NextRequest): Promise<boolean> {
   const authHeader = req.headers.get('authorization') || ''
 
-  // Cron / CLI path: Bearer token
-  const secret = process.env.RECAP_SECRET
-  // FIX #8: warn when secret is absent so a cron operator knows why they're
-  // getting 401s instead of silently failing.
-  if (!secret) {
-    console.warn('[weekly-recap] RECAP_SECRET is not set — Bearer token auth disabled; only admin sessions will work.')
+  // Cron / CLI path: Bearer token. Accept RECAP_SECRET (manual/CLI calls) OR
+  // CRON_SECRET (Vercel Cron sends `Bearer $CRON_SECRET`), so the weekly recap
+  // can't silently 401 if the two values ever drift apart.
+  const recap = process.env.RECAP_SECRET
+  const cron  = process.env.CRON_SECRET
+  // FIX #8: warn when no Bearer secret is set so a cron operator knows why
+  // they're getting 401s instead of silently failing.
+  if (!recap && !cron) {
+    console.warn('[weekly-recap] neither RECAP_SECRET nor CRON_SECRET is set — Bearer cron auth disabled; only admin sessions will work.')
   }
-  if (secret && authHeader === `Bearer ${secret}`) return true
+  if ((recap && authHeader === `Bearer ${recap}`) || (cron && authHeader === `Bearer ${cron}`)) return true
 
   // Admin UI path: Better Auth session cookie (sent automatically same-origin)
   try {
@@ -157,7 +160,7 @@ function buildEmailHtml(s: RecapStats): string {
         </tr>`
     }).join('')
 
-  // FIX #1: escape cat — comes from raw Firestore data, not a closed enum.
+  // FIX #1: escape cat — comes from raw DB data, not a closed enum.
   const catRows = s.submissions.byCategory.map(([cat, n]) => `
     <tr>
       <td style="padding:5px 0;font-size:13px;color:#ccc;border-bottom:1px solid #1e1e1e">${escHtml(cat)}</td>

@@ -1,4 +1,7 @@
+import 'server-only'
 // ─── libSQL / Turso client + Drizzle instance (server-side only) ──────────────
+// `server-only` makes any accidental client-component import a BUILD error, so
+// the Turso token can never be bundled into browser JS.
 // Local dev defaults to a file DB (no Turso account needed). Production sets
 // TURSO_DATABASE_URL (libsql://…) + TURSO_AUTH_TOKEN. Never import from a
 // Client Component — this pulls in node/libsql and must stay server-side.

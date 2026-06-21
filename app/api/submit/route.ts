@@ -179,7 +179,7 @@ function adminLink(req: NextRequest, docId: string): string {
     return `${siteUrl.replace(/\/$/, '')}/admin?view=browse&id=${safeId}`
   }
 
-  // Proxy header (Cloud Run, Vercel, nginx) — prefer over Host
+  // Proxy header (Vercel, nginx) — prefer over Host
   const forwarded = req.headers.get('x-forwarded-host')
   const host      = (forwarded ? forwarded.split(',')[0].trim() : null)
                     || req.headers.get('host')

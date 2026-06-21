@@ -25,17 +25,19 @@ reCAPTCHA Enterprise are gone, along with every `NEXT_PUBLIC_FIREBASE_*` and
 
 ### Status
 
+**Live since 2026-06-20 at https://nasty-n8-dashboard.vercel.app.** All steps below are complete:
+
 | Step                              | Status |
 | --------------------------------- | ------ |
-| Turso prod database created       | ⬜     |
-| Schema pushed (drizzle-kit)       | ⬜     |
-| Data imported from backup         | ⬜     |
-| Turnstile keys                    | ⬜     |
-| `BETTER_AUTH_SECRET` generated    | ⬜     |
-| Vercel project + env vars         | ⬜     |
-| Live URLs + `CRON_SECRET` set     | ⬜     |
-| Smoke test passed                 | ⬜     |
-| Firebase project deleted          | ⬜     |
+| Turso prod database created       | ✅     |
+| Schema pushed (drizzle-kit)       | ✅     |
+| Data imported from backup         | ✅     |
+| Turnstile keys                    | ✅     |
+| `BETTER_AUTH_SECRET` generated    | ✅     |
+| Vercel project + env vars         | ✅     |
+| Live URLs + `CRON_SECRET` set     | ✅     |
+| Smoke test passed                 | ✅     |
+| Firebase project deleted          | ✅     |
 
 ---
 
@@ -89,9 +91,8 @@ TURSO_AUTH_TOKEN='<token>' \
 npx tsx scripts/import-to-turso.ts firestore-backup-2026-06-20T20-15-31-414Z.json
 ```
 
-> **Note:** `scripts/import-to-turso.ts` is added as part of the data-migration
-> step — it does not exist in `scripts/` yet (only `export-firestore.ts` does).
-> If the import script is not present, complete the data-migration step first.
+> **Note:** the import is idempotent (`onConflictDoNothing` on the doc ID), so
+> it's safe to re-run.
 
 ---
 

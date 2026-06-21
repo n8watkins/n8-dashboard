@@ -1,3 +1,4 @@
+import 'server-only'
 // ─── Better Auth (server) — magic-link admin login on Turso/Drizzle ───────────
 // Replaces Firebase Auth (Google sign-in). Only the ADMIN_EMAILS allowlist can
 // ever receive a link, so only the two admins can sign in. Long rolling session

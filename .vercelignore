@@ -1,0 +1,8 @@
+# Files that have no place in the Vercel deployment.
+# (Most are gitignored too, but .vercelignore also covers local `vercel deploy`.)
+design-mockups/
+firestore-backup-*.json
+local.db
+local.db-*
+*.db
+.local-ops.yaml
