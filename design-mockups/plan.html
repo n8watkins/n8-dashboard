@@ -510,6 +510,12 @@
     <!-- ============ MAIN ============ -->
     <main class="plan-main">
 
+      <!-- SUPERSEDED NOTICE — architecture changed after this plan was written -->
+      <section style="background:#1c1410;border:1px solid #5c3d1e;border-radius:10px;padding:16px 20px;margin-bottom:24px">
+        <strong style="color:#f97316">⚠ Historical document — original v1 plan (Firebase architecture).</strong>
+        <p style="margin:8px 0 0;color:#ccc;font-size:14px;line-height:1.5">This was the original Firebase-based execution plan. The app has since been migrated off Google Cloud to <strong>Next.js 16 + Vercel + Turso (libSQL/Drizzle) + Better Auth (magic-link) + Cloudflare Turnstile</strong>, and is live at <a href="https://nasty-n8-dashboard.vercel.app" style="color:#4ade80">nasty-n8-dashboard.vercel.app</a>. For the current structure see <code>README.md</code> and <code>DEPLOY.md</code>. Everything below referencing Firestore, Firebase Auth, <code>firestore.rules</code>, <code>lib/firebase*.ts</code>, or <code>lib/firestore.ts</code> is obsolete.</p>
+      </section>
+
       <!-- ============ SNAPSHOT ============ -->
       <section class="hero-card" id="snapshot">
         <div class="eyebrow">v1 execution plan · single source of truth</div>

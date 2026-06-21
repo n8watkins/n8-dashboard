@@ -160,9 +160,9 @@ async function verifyTurnstile(token: string, secret: string, ip: string): Promi
 // ─── Deep-link URL builder ────────────────────────────────────────────────────
 // Priority:
 //   1. SITE_URL env var — set this in production to guarantee correct links
-//      (e.g. https://suggestion-box.example.com). Avoids header-spoofing risk
-//      and works correctly behind App Hosting / Cloud Run reverse proxies where
-//      X-Forwarded-Host may carry an internal hostname.
+//      (e.g. https://nasty-n8-dashboard.vercel.app). Avoids header-spoofing risk
+//      and works correctly behind Vercel's reverse proxy where X-Forwarded-Host
+//      may carry an internal hostname.
 //   2. X-Forwarded-Host — set by most reverse proxies; preferred over Host when
 //      SITE_URL is absent.
 //   3. Host — fallback for local dev (localhost:3000 / :3001).

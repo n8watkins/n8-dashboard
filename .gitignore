@@ -22,7 +22,6 @@ firestore-backup-*.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-firebase-debug.log*
 tsconfig.tsbuildinfo
 
 # local libSQL dev database
