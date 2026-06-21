@@ -1341,3 +1341,207 @@ details:not([open]) .chev { transform: rotate(0deg); }
   .recap-stat-pills { grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .recap-big-num    { font-size: 32px; }
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Public form — v2 redesign (option chips, numbered questions, gradients + glow)
+   Appended last so it overrides the base .form-* rules above. Accent is the
+   app's mint-green (--green), a dialed-back take on the mockup's neon.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.form-shell {
+  position: relative;
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 34px 18px 52px;
+}
+/* soft ambient glow behind the card */
+.form-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 38% at 50% 2%,  rgba(74, 222, 128, 0.10), transparent 70%),
+    radial-gradient(45% 35% at 88% 102%, rgba(168, 85, 247, 0.06), transparent 72%);
+}
+
+/* Scoped to .form-shell so the success page's bare .form-card keeps its base padding. */
+.form-shell .form-card {
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(74, 222, 128, 0.04), transparent 140px),
+    var(--panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 24px 60px -28px rgba(0, 0, 0, 0.75),
+    0 0 70px -28px rgba(74, 222, 128, 0.22);
+}
+
+/* Header band with a glowing accent underline */
+.form-header {
+  position: relative;
+  padding: 22px 30px 18px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+}
+.form-header::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  opacity: 0.5;
+}
+.form-header-top { display: flex; align-items: center; gap: 11px; margin-bottom: 9px; }
+.form-brand-dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green), 0 0 18px rgba(74, 222, 128, 0.55);
+  flex-shrink: 0;
+}
+.form-shell .form-card .form-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0;
+}
+.form-shell .form-card .form-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 500px;
+}
+
+/* Body */
+.form-body { padding: 20px 30px 24px; }
+
+.form-source-tag { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 18px; }
+
+/* Numbered question block */
+.form-q { margin-bottom: 14px; }
+.form-q .q-label { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+.q-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), #22c55e);
+  color: #04140a;
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.30);
+}
+.q-icon { font-size: 16px; line-height: 1; }
+.q-text { font-size: 15px; font-weight: 600; color: var(--text); }
+.q-text .req { color: var(--green); margin-left: 2px; }
+.opt-tag { font-size: 11px; font-weight: 500; font-style: italic; color: var(--muted); margin-left: 5px; }
+
+/* Option chips (single-select, replaces <select>) */
+.opt-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color .12s, color .12s, background .12s, box-shadow .12s, transform .04s;
+}
+.opt svg    { flex-shrink: 0; opacity: .9; }
+.opt:hover  { border-color: var(--green-dim); color: var(--text); }
+.opt:active { transform: translateY(1px); }
+.opt:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.opt.on {
+  background: linear-gradient(135deg, var(--green), #22c55e);
+  border-color: var(--green);
+  color: #04140a;
+  font-weight: 700;
+  box-shadow: 0 0 16px -3px rgba(74, 222, 128, 0.45);
+}
+.opt.on svg { opacity: 1; }
+.opt-group.has-error .opt:not(.on) { border-color: var(--red-border); }
+
+/* Inputs — scoped under .form-card to win over the global element rules */
+.form-card .form-input,
+.form-card .form-textarea {
+  width: 100%;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.form-card .form-textarea { min-height: 84px; height: auto; resize: vertical; line-height: 1.5; }
+.form-card .form-input:focus,
+.form-card .form-textarea:focus {
+  border-color: var(--border-hot);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.10);
+}
+
+/* Divider before submit */
+.form-sep { border: none; border-top: 1px solid var(--border); margin: 2px 0 16px; }
+
+/* Submit — gradient + glow */
+.form-card .form-submit {
+  width: 100%;
+  margin-top: 0;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--green), #22c55e);
+  color: #04140a;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: inherit;
+  cursor: pointer;
+  transition: box-shadow .15s, opacity .15s, transform .05s;
+  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.25), 0 10px 26px -12px rgba(74, 222, 128, 0.55);
+}
+.form-card .form-submit:hover:not(:disabled) { box-shadow: 0 0 28px -4px rgba(74, 222, 128, 0.6); }
+.form-card .form-submit:active:not(:disabled) { transform: translateY(1px); }
+.form-card .form-submit:disabled { opacity: .55; cursor: not-allowed; }
+.form-card .form-submit.submitting { opacity: .8; }
+
+/* Disclaimer */
+.form-disclaimer {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 14px;
+  line-height: 1.6;
+  opacity: .85;
+}
+
+@media (max-width: 560px) {
+  .form-shell  { padding: 22px 12px 44px; }
+  .form-header { padding: 20px 18px 16px; }
+  .form-body   { padding: 18px 18px 22px; }
+  .form-q      { margin-bottom: 16px; }
+  /* Bigger tap targets (WCAG 2.5.5), and 16px input text so iOS Safari doesn't zoom */
+  .opt { padding: 11px 15px; min-height: 44px; }
+  .form-card .form-input,
+  .form-card .form-textarea { font-size: 16px; }
+}

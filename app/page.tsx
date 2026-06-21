@@ -23,7 +23,7 @@ declare global {
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
-// ─── Public suggestion form ───────────────────────────────────────────────────
+// ─── Public suggestion form (v2 — numbered questions + option chips) ──────────
 
 export default function SuggestionFormPage() {
   return (
@@ -45,7 +45,7 @@ function SuggestionFormInner() {
     category:   '',
     type:       '',
     suggestion: '',
-    why:        '',
+    why:        '', // removed from the form; always sent empty (optional server-side)
     username:   '',
     source:     validSource,
     hp:         '', // honeypot — must stay empty
@@ -108,22 +108,25 @@ function SuggestionFormInner() {
     setTouched(prev => new Set([...prev, key]))
   }
 
+  // Pick an option chip for a single-select question.
+  function pick(key: string, value: string) {
+    // Tapping the selected chip again clears it (only matters for optional ones).
+    set(key, fields[key as keyof typeof fields] === value ? '' : value)
+    touch(key)
+  }
+
   function validate(f: typeof fields): Record<string, string> {
     const errs: Record<string, string> = {}
-    if (!f.category) errs.category = 'Please select a category.'
-    if (!f.type)     errs.type     = 'Please select a type.'
-    if (!validSource && !f.source) errs.source = 'Please select a source.'
 
     const s = f.suggestion.trim()
     if (!s)                                            errs.suggestion = 'Please write your suggestion.'
     else if (s.length < FIELD_LIMITS.suggestion.min)   errs.suggestion = `At least ${FIELD_LIMITS.suggestion.min} characters required.`
     else if (s.length > FIELD_LIMITS.suggestion.max)   errs.suggestion = `Maximum ${FIELD_LIMITS.suggestion.max} characters.`
 
-    const w = f.why.trim()
-    if (!w)                                  errs.why = 'Please explain why this would help.'
-    else if (w.length < FIELD_LIMITS.why.min)   errs.why = `At least ${FIELD_LIMITS.why.min} characters required.`
-    else if (w.length > FIELD_LIMITS.why.max)   errs.why = `Maximum ${FIELD_LIMITS.why.max} characters.`
+    if (!f.type)     errs.type     = 'Please pick a type.'
+    if (!f.category) errs.category = 'Please pick a category.'
 
+    // username + source are optional
     if (f.username.length > FIELD_LIMITS.username.max) errs.username = `Maximum ${FIELD_LIMITS.username.max} characters.`
 
     return errs
@@ -133,9 +136,7 @@ function SuggestionFormInner() {
     e.preventDefault()
     if (status === 'submitting') return
 
-    const allTouched = ['category', 'type', 'suggestion', 'why', 'username']
-    if (!validSource) allTouched.push('source')
-    setTouched(new Set(allTouched))
+    setTouched(new Set(['suggestion', 'type', 'category', 'username']))
 
     const errs = validate(fields)
     if (Object.keys(errs).length > 0) {
@@ -185,27 +186,52 @@ function SuggestionFormInner() {
     return touched.has(key) ? errors[key] : undefined
   }
 
+  // Single-select chip group (replaces a <select>). Options come straight from
+  // lib/config, so every choice is always present. `icon` is optional per option.
+  function ChipGroup({ field, options, icon }: {
+    field: string
+    options: readonly string[]
+    icon?: (opt: string) => React.ReactNode
+  }) {
+    const err = fieldErr(field)
+    const selected = (fields as Record<string, string>)[field]
+    return (
+      <>
+        <div className={`opt-group${err ? ' has-error' : ''}`}>
+          {options.map(opt => (
+            <button
+              type="button"
+              key={opt}
+              className={`opt${selected === opt ? ' on' : ''}`}
+              aria-pressed={selected === opt}
+              onClick={() => pick(field, opt)}
+            >
+              {icon?.(opt)}
+              {opt}
+            </button>
+          ))}
+        </div>
+        {err && <div className="field-error">{err}</div>}
+      </>
+    )
+  }
+
   return (
     <div className="form-shell">
       <div className="form-card">
-        <div className="brand-mark form-brand-mark" />
 
-        {validSource && (
-          <div className="form-source-tag">
-            Responding from <strong>{validSource}</strong>
+        {/* Header */}
+        <div className="form-header">
+          <div className="form-header-top">
+            <span className="form-brand-dot" />
+            <h1 className="form-title">Nasty N8 Suggestion Box</h1>
           </div>
-        )}
-
-        <h1 className="form-title">Nasty N8 Suggestion Box</h1>
-        <p className="form-desc">
-          Got an idea, problem, content request, or community suggestion?
-          Use this box for anything related to the stream, videos, Discord,
-          events, emotes, coaching, or Nasty N8 community stuff.
-          <br /><br />
-          By submitting, you understand your suggestion may be reviewed, discussed
-          on stream, turned into a poll, or shared publicly in the Nasty N8 community.
-          Don't submit anything private or personal.
-        </p>
+          <p className="form-desc">
+            Got an idea, problem, content request, or community suggestion? Use this box
+            for anything related to the stream, videos, Discord, events, emotes, coaching,
+            or Nasty N8 community stuff.
+          </p>
+        </div>
 
         {/* Honeypot — visually hidden; bots fill it in, humans never see it */}
         <div className="hp-field" aria-hidden="true">
@@ -219,51 +245,18 @@ function SuggestionFormInner() {
           />
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form className="form-body" onSubmit={handleSubmit}>
 
-          {/* Category */}
-          <div className={`form-field${fieldErr('category') ? ' has-error' : ''}`}>
-            <label className="form-label">
-              What is this suggestion for? <span className="req">*</span>
-            </label>
-            <select
-              className="form-select"
-              value={fields.category}
-              onChange={e => set('category', e.target.value)}
-              onBlur={() => touch('category')}
-            >
-              <option value="">Select a category…</option>
-              {CATEGORY_OPTIONS.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-            {fieldErr('category') && <div className="field-error">{fieldErr('category')}</div>}
-          </div>
+          {validSource && (
+            <div className="form-source-tag">◎ Responding from <strong>{validSource}</strong></div>
+          )}
 
-          {/* Type */}
-          <div className={`form-field${fieldErr('type') ? ' has-error' : ''}`}>
-            <label className="form-label">
-              What type of suggestion is this? <span className="req">*</span>
-            </label>
-            <select
-              className="form-select"
-              value={fields.type}
-              onChange={e => set('type', e.target.value)}
-              onBlur={() => touch('type')}
-            >
-              <option value="">Select a type…</option>
-              {TYPE_OPTIONS.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-            {fieldErr('type') && <div className="field-error">{fieldErr('type')}</div>}
-          </div>
-
-          {/* Suggestion */}
-          <div className={`form-field${fieldErr('suggestion') ? ' has-error' : ''}`}>
-            <label className="form-label">
-              What's your suggestion? <span className="req">*</span>
-            </label>
+          {/* Q1 — Suggestion (open-ended, first) */}
+          <div className="form-q">
+            <div className="q-label">
+              <span className="q-num">1</span>
+              <span className="q-text">What&apos;s your suggestion? <span className="req">*</span></span>
+            </div>
             <textarea
               className="form-textarea"
               value={fields.suggestion}
@@ -279,58 +272,49 @@ function SuggestionFormInner() {
             {fieldErr('suggestion') && <div className="field-error">{fieldErr('suggestion')}</div>}
           </div>
 
-          {/* Why */}
-          <div className={`form-field${fieldErr('why') ? ' has-error' : ''}`}>
-            <label className="form-label">
-              Why would this help? <span className="req">*</span>
-            </label>
-            <textarea
-              className="form-textarea"
-              value={fields.why}
-              onChange={e => set('why', e.target.value)}
-              onBlur={() => touch('why')}
-              placeholder="What problem does this solve, or what would it make better?"
-            />
-            <div className="char-count-row">
-              <span className={fields.why.length > FIELD_LIMITS.why.max ? 'over-limit' : ''}>
-                {fields.why.length} / {FIELD_LIMITS.why.max}
-              </span>
+          {/* Q2 — Type */}
+          <div className="form-q">
+            <div className="q-label">
+              <span className="q-num">2</span>
+              <span className="q-text">What type of suggestion is this? <span className="req">*</span></span>
             </div>
-            {fieldErr('why') && <div className="field-error">{fieldErr('why')}</div>}
+            <ChipGroup field="type" options={TYPE_OPTIONS} />
           </div>
 
-          {/* Discord username */}
-          <div className={`form-field${fieldErr('username') ? ' has-error' : ''}`}>
-            <label className="form-label">What's your Discord username?</label>
+          {/* Q3 — Category */}
+          <div className="form-q">
+            <div className="q-label">
+              <span className="q-num">3</span>
+              <span className="q-text">What is this suggestion for? <span className="req">*</span></span>
+            </div>
+            <ChipGroup field="category" options={CATEGORY_OPTIONS} />
+          </div>
+
+          {/* Q4 — Discord username (optional) */}
+          <div className="form-q">
+            <div className="q-label">
+              <span className="q-num">4</span>
+              <span className="q-text">What&apos;s your Discord username? <span className="opt-tag">optional</span></span>
+            </div>
             <input
               type="text"
               className="form-input"
               value={fields.username}
               onChange={e => set('username', e.target.value)}
               onBlur={() => touch('username')}
-              placeholder="Optional — include this if you'd like a follow-up"
+              placeholder="Include this if you'd like a follow-up"
             />
             {fieldErr('username') && <div className="field-error">{fieldErr('username')}</div>}
           </div>
 
-          {/* Source — only shown when not pre-set from URL */}
+          {/* Q5 — Source (optional, with icons; hidden when pre-set from the URL) */}
           {!validSource && (
-            <div className={`form-field${fieldErr('source') ? ' has-error' : ''}`}>
-              <label className="form-label">
-                Where are you submitting from? <span className="req">*</span>
-              </label>
-              <select
-                className="form-select"
-                value={fields.source}
-                onChange={e => set('source', e.target.value)}
-                onBlur={() => touch('source')}
-              >
-                <option value="">Select a source…</option>
-                {SOURCE_OPTIONS.map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
-              {fieldErr('source') && <div className="field-error">{fieldErr('source')}</div>}
+            <div className="form-q">
+              <div className="q-label">
+                <span className="q-num">5</span>
+                <span className="q-text">Where are you submitting from? <span className="opt-tag">optional</span></span>
+              </div>
+              <ChipGroup field="source" options={SOURCE_OPTIONS} icon={sourceIcon} />
             </div>
           )}
 
@@ -339,18 +323,68 @@ function SuggestionFormInner() {
           )}
 
           {status === 'error' && errorMsg && (
-            <div className="form-error">{errorMsg}</div>
+            <div className="form-error" role="alert">{errorMsg}</div>
           )}
+
+          <hr className="form-sep" />
 
           <button
             type="submit"
             className={`form-submit${submitting ? ' submitting' : ''}`}
             disabled={submitting}
           >
-            {submitting ? 'Submitting…' : 'Submit Suggestion'}
+            {submitting ? 'Submitting…' : 'Submit Suggestion →'}
           </button>
+
+          <p className="form-disclaimer">
+            By submitting, you understand your suggestion may be reviewed, discussed on stream,
+            turned into a poll, or shared publicly in the Nasty N8 community. Don&apos;t submit
+            anything private or personal.
+          </p>
         </form>
       </div>
     </div>
+  )
+}
+
+// ─── Source-option icons ──────────────────────────────────────────────────────
+
+function sourceIcon(opt: string): React.ReactNode {
+  if (opt === 'Discord')        return <DiscordIcon />
+  if (opt.startsWith('Twitch')) return <TwitchIcon />
+  if (opt.startsWith('YouTube')) return <YouTubeIcon />
+  if (opt === 'Stream chat')    return <ChatIcon />
+  return null
+}
+
+function DiscordIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+      <path d="M19.27 5.33A16.6 16.6 0 0 0 15.05 4c-.18.33-.39.77-.54 1.11a15.4 15.4 0 0 0-4.02 0C10.34 4.77 10.12 4.33 9.95 4a16.6 16.6 0 0 0-4.22 1.33C3.05 9.32 2.33 13.2 2.69 17.02a16.7 16.7 0 0 0 5.06 2.57c.41-.56.77-1.16 1.08-1.79-.59-.22-1.16-.5-1.69-.83.14-.1.28-.21.41-.32 3.27 1.52 6.8 1.52 10.03 0 .14.11.27.22.41.32-.54.33-1.1.61-1.7.83.32.62.68 1.22 1.09 1.78a16.7 16.7 0 0 0 5.06-2.57c.42-4.43-.72-8.28-3.02-11.69ZM8.84 14.67c-.99 0-1.8-.91-1.8-2.02s.79-2.03 1.8-2.03 1.82.92 1.8 2.03c0 1.11-.8 2.02-1.8 2.02Zm6.64 0c-.99 0-1.8-.91-1.8-2.02s.79-2.03 1.8-2.03 1.82.92 1.8 2.03c0 1.11-.79 2.02-1.8 2.02Z"/>
+    </svg>
+  )
+}
+
+function TwitchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+      <path d="M11.64 5.93h1.43v4.28h-1.43m3.93-4.28H17v4.28h-1.43M7 2 3.43 5.57v12.86h4.28V22l3.58-3.57h2.85L20.57 12V2H7Zm12.14 9.29-2.86 2.85h-2.85l-2.5 2.5v-2.5H7.71V3.43h11.43Z"/>
+    </svg>
+  )
+}
+
+function YouTubeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+      <path d="M23.5 6.2a3 3 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3 3 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3 3 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3 3 0 0 0 2.12-2.14A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8ZM9.55 15.57V8.43L15.82 12l-6.27 3.57Z"/>
+    </svg>
+  )
+}
+
+function ChatIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+      <path d="M20 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4v4l4-4h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/>
+    </svg>
   )
 }

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nasty N8 Suggestion Box — Design Preview</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a0a;
+      color: #d4d4d4;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 48px 16px 80px;
+    }
+
+    /* ── Card ── */
+    .card {
+      max-width: 660px;
+      margin: 0 auto;
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #0d0d0d;
+      border-bottom: 2px solid #39ff14;
+      padding: 28px 36px 24px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #39ff14;
+      box-shadow: 0 0 8px #39ff14;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+      max-width: 480px;
+    }
+
+    /* ── Source tag ── */
+    .source-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #161616;
+      border: 1px solid #252525;
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 12px;
+      color: #666;
+      margin: 20px 36px 0;
+    }
+
+    .source-tag strong { color: #39ff14; font-weight: 600; }
+
+    /* ── Form body ── */
+    .body {
+      padding: 28px 36px 36px;
+    }
+
+    /* ── Question block ── */
+    .q {
+      margin-bottom: 32px;
+    }
+
+    .q-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .q-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #39ff14;
+      color: #000;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .q-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .q-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ccc;
+    }
+
+    .req { color: #39ff14; }
+
+    /* ── Button group (replaces <select>) ── */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .opt {
+      padding: 8px 18px;
+      border-radius: 999px;
+      border: 1px solid #252525;
+      background: #171717;
+      color: #888;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
+      user-select: none;
+    }
+
+    .opt:hover {
+      border-color: #39ff14;
+      color: #39ff14;
+    }
+
+    .opt.on {
+      background: #39ff14;
+      border-color: #39ff14;
+      color: #000;
+      font-weight: 700;
+    }
+
+    /* ── Text inputs ── */
+    textarea, input[type="text"] {
+      width: 100%;
+      background: #161616;
+      border: 1px solid #252525;
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #ccc;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.12s;
+    }
+
+    textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+
+    textarea:focus, input[type="text"]:focus {
+      border-color: #39ff14;
+    }
+
+    .char-row {
+      text-align: right;
+      font-size: 11px;
+      color: #383838;
+      margin-top: 5px;
+    }
+
+    /* ── Divider ── */
+    .sep {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      margin: 8px 0 28px;
+    }
+
+    /* ── Submit ── */
+    .submit {
+      width: 100%;
+      padding: 15px;
+      background: #39ff14;
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.15s, box-shadow 0.15s;
+    }
+
+    .submit:hover {
+      opacity: 0.88;
+      box-shadow: 0 0 20px rgba(57, 255, 20, 0.25);
+    }
+
+    /* ── Field error state ── */
+    .q.error textarea,
+    .q.error input {
+      border-color: #f87171;
+    }
+
+    .field-err {
+      font-size: 12px;
+      color: #f87171;
+      margin-top: 6px;
+    }
+
+    .opt.err-ring { border-color: #f87171; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      font-size: 11px;
+      color: #3a3a3a;
+      text-align: center;
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="brand-dot"></div>
+      <h1>Nasty N8 Suggestion Box</h1>
+    </div>
+    <p>
+      Got an idea, problem, content request, or community suggestion?
+      Use this box for anything related to the stream, videos, Discord, or Nasty N8 community.
+    </p>
+  </div>
+
+  <!-- Source tag (visible when ?source= is in URL) -->
+  <div class="source-tag">
+    ◎ &nbsp;Responding from <strong>Discord</strong>
+  </div>
+
+  <!-- Form body -->
+  <div class="body">
+
+    <!-- Q1: Category -->
+    <div class="q" id="q-category">
+      <div class="q-label">
+        <div class="q-num">1</div>
+        <span class="q-icon">🎯</span>
+        <span class="q-text">What is this suggestion for? <span class="req">*</span></span>
+      </div>
+      <div class="btn-group" data-group="category">
+        <button class="opt" onclick="pick(this)">Live stream</button>
+        <button class="opt" onclick="pick(this)">Video / Shorts</button>
+        <button class="opt" onclick="pick(this)">Discord</button>
+        <button class="opt" onclick="pick(this)">Other</button>
+      </div>
+    </div>
+
+    <!-- Q2: Type -->
+    <div class="q" id="q-type">
+      <div class="q-label">
+        <div class="q-num">2</div>
+        <span class="q-icon">📌</span>
+        <span class="q-text">What type of suggestion is this? <span class="req">*</span></span>
+      </div>
+      <div class="btn-group" data-group="type">
+        <button class="opt" onclick="pick(this)">New idea</button>
+        <button class="opt" onclick="pick(this)">Problem / bug</button>
+        <button class="opt" onclick="pick(this)">Rules / moderation</button>
+        <button class="opt" onclick="pick(this)">Content</button>
+        <button class="opt" onclick="pick(this)">Community request</button>
+        <button class="opt" onclick="pick(this)">Other</button>
+      </div>
+    </div>
+
+    <!-- Q3: Suggestion -->
+    <div class="q" id="q-suggestion">
+      <div class="q-label">
+        <div class="q-num">3</div>
+        <span class="q-icon">💡</span>
+        <span class="q-text">What's your suggestion? <span class="req">*</span></span>
+      </div>
+      <textarea
+        id="suggestion"
+        placeholder="Be specific. What should be added, changed, fixed, tested, or removed?"
+        oninput="charCount(this, 'sc', 2000)"
+      ></textarea>
+      <div class="char-row"><span id="sc">0 / 2000</span></div>
+    </div>
+
+    <!-- Q4: Why -->
+    <div class="q" id="q-why">
+      <div class="q-label">
+        <div class="q-num">4</div>
+        <span class="q-icon">🤔</span>
+        <span class="q-text">Why would this help? <span class="req">*</span></span>
+      </div>
+      <textarea
+        id="why"
+        style="min-height:80px"
+        placeholder="What problem does this solve, or what would it make better?"
+        oninput="charCount(this, 'wc', 1000)"
+      ></textarea>
+      <div class="char-row"><span id="wc">0 / 1000</span></div>
+    </div>
+
+    <!-- Q5: Discord username -->
+    <div class="q" id="q-username">
+      <div class="q-label">
+        <div class="q-num">5</div>
+        <span class="q-icon">💬</span>
+        <span class="q-text">Discord username</span>
+      </div>
+      <input type="text" placeholder="Optional — include this if you'd like a follow-up" />
+    </div>
+
+    <hr class="sep" />
+
+    <button class="submit" onclick="mockSubmit()">Submit Suggestion &nbsp;→</button>
+
+    <p class="disclaimer">
+      By submitting, you understand your suggestion may be reviewed, discussed on stream,
+      or shared publicly in the Nasty N8 community. Don't submit anything private or personal.
+    </p>
+
+  </div>
+</div>
+
+<script>
+  function pick(btn) {
+    const group = btn.closest('[data-group]')
+    group.querySelectorAll('.opt').forEach(b => b.classList.remove('on'))
+    btn.classList.add('on')
+  }
+
+  function charCount(el, counterId, max) {
+    const n = el.value.length
+    const span = document.getElementById(counterId)
+    span.textContent = n + ' / ' + max
+    span.style.color = n > max ? '#f87171' : '#383838'
+  }
+
+  function mockSubmit() {
+    // Just a visual demo — shake unselected required groups
+    let ok = true
+    document.querySelectorAll('[data-group]').forEach(g => {
+      const sel = g.querySelector('.on')
+      const qBlock = g.closest('.q')
+      if (!sel) {
+        ok = false
+        g.querySelectorAll('.opt').forEach(b => {
+          b.classList.add('err-ring')
+          setTimeout(() => b.classList.remove('err-ring'), 1200)
+        })
+      }
+    })
+    ;['suggestion', 'why'].forEach(id => {
+      const el = document.getElementById(id)
+      const q = el.closest('.q')
+      if (!el.value.trim()) {
+        ok = false
+        q.classList.add('error')
+        el.addEventListener('input', () => q.classList.remove('error'), { once: true })
+      }
+    })
+    if (ok) {
+      document.querySelector('.submit').textContent = '✓ Submitted!'
+      document.querySelector('.submit').style.background = '#22c55e'
+    }
+  }
+</script>
+
+</body>
+</html>

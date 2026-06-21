@@ -48,9 +48,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Validate required fields
-  const { category, type, suggestion, why, source } = body
-  if (!category || !type || !suggestion || !why || !source) {
+  // Validate required fields (why + source are optional)
+  const { category, type, suggestion } = body
+  const why    = body.why    || ''
+  const source = body.source || ''
+  if (!category || !type || !suggestion) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
@@ -61,7 +63,7 @@ export async function POST(req: NextRequest) {
   if (!TYPE_OPTIONS.includes(type as never)) {
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
   }
-  if (!SOURCE_OPTIONS.includes(source as never)) {
+  if (source && !SOURCE_OPTIONS.includes(source as never)) {
     return NextResponse.json({ error: 'Invalid source' }, { status: 400 })
   }
 
@@ -75,8 +77,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Suggestion must be at least ${FIELD_LIMITS.suggestion.min} characters.` }, { status: 400 })
   if (trimSuggestion.length > FIELD_LIMITS.suggestion.max)
     return NextResponse.json({ error: `Suggestion must be ${FIELD_LIMITS.suggestion.max} characters or fewer.` }, { status: 400 })
-  if (trimWhy.length < FIELD_LIMITS.why.min)
-    return NextResponse.json({ error: `"Why it helps" must be at least ${FIELD_LIMITS.why.min} characters.` }, { status: 400 })
   if (trimWhy.length > FIELD_LIMITS.why.max)
     return NextResponse.json({ error: `"Why it helps" must be ${FIELD_LIMITS.why.max} characters or fewer.` }, { status: 400 })
   if (extra.length > FIELD_LIMITS.extra.max)
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Username must be ${FIELD_LIMITS.username.max} characters or fewer.` }, { status: 400 })
 
   // Moderation check
-  const flagged         = checkProfanity(`${suggestion} ${body.why} ${extra}`)
+  const flagged         = checkProfanity(`${suggestion} ${why} ${extra}`)
   const moderationState = flagged.length > 0 ? 'flagged' : 'clean'
 
   const id = crypto.randomUUID()
@@ -203,9 +203,11 @@ async function notifyDiscord(req: NextRequest, data: SubmitPayload, docId: strin
       description: data.suggestion.slice(0, 400),
       color:       isFlagged ? 0xf87171 : 0x4ade80,
       fields: [
-        { name: 'Why',    value: data.why.slice(0, 300) },
-        { name: 'Source', value: data.source,               inline: true },
-        { name: 'From',   value: data.username || '(anon)',  inline: true },
+        // Discord rejects embed fields with an empty value string (HTTP 400), so
+        // omit Why (the form no longer collects it) and default Source/From.
+        ...(data.why?.trim() ? [{ name: 'Why', value: data.why.slice(0, 300) }] : []),
+        { name: 'Source', value: data.source || '(not specified)', inline: true },
+        { name: 'From',   value: data.username || '(anon)',        inline: true },
         { name: 'Review', value: `[Open submission](${reviewUrl})` },
       ],
       footer:    { text: isFlagged ? '⚠ flagged' : 'Nasty N8 Dashboard' },
@@ -213,11 +215,13 @@ async function notifyDiscord(req: NextRequest, data: SubmitPayload, docId: strin
     }],
   }
 
-  await fetch(url, {
+  const res = await fetch(url, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify(body),
   })
+  // Surface failures in the submit handler's allSettled log instead of failing silently.
+  if (!res.ok) throw new Error(`Discord webhook failed: ${res.status}`)
 }
 
 // ─── Flagged-content email ────────────────────────────────────────────────────
