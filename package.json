@@ -13,7 +13,7 @@
     "better-auth": "^1.6.20",
     "drizzle-orm": "^0.45.2",
     "next": "^16.2.9",
-    "nodemailer": "^6.9.13",
+    "nodemailer": "^10.1.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
